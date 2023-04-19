@@ -14,3 +14,9 @@ def add_customer(first_name, last_name):
     session.add(customer)
     session.commit()
     session.close()
+
+
+def get_storage_addresses():
+    session = Session()
+    addresses = [row[0] for row in session.query(Storage.address).all()]
+    return addresses
