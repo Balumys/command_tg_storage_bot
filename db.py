@@ -15,7 +15,7 @@ class Customer(Base):
     email = Column(String(100), nullable=False)
     address = Column(String(250))
     phone = Column(String(20), nullable=False)
-    orders = relationship('Orders')
+    orders = relationship('Orders', backref='customers')
 
     def __repr__(self):
         return f"({self.customer_id} {self.name})"
@@ -28,7 +28,7 @@ class Orders(Base):
     created_at = Column(DateTime, default=datetime.datetime.now(), nullable=False)
     expired_at = Column(DateTime, nullable=False)  # This should be calc
     customer_id = Column(Integer, ForeignKey(Customer.customer_id))
-    boxes = relationship("Box")
+    boxes = relationship("Box", backref='order')
     price = Column(Integer, nullable=False)  # This should be calc
     is_delivery = Column(Integer, nullable=False)  # 1 if yes, 0 in not
 
