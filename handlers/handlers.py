@@ -2,9 +2,9 @@ from telegram.ext import CommandHandler, MessageHandler, Filters
 from .markups import start_keyboard, storage
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from db import Base, Customer, Orders, Storage, Box
+#from db import Base, Customer, Orders, Storage, Box
 
-engine = create_engine('sqlite:////Users/sergeiperevera/PycharmProjects/telegram/command_tg_storage_bot/database.db')
+engine = create_engine('sqlite:////../database.db')
 Session = sessionmaker(bind=engine)
 session = Session()
 
@@ -31,7 +31,7 @@ def button(update, context):
         addresses = [row[0] for row in session.query(Storage.address).all()]
         address_text = "\n".join(addresses)
         update.message.reply_text(
-            f''' 
+            f'''
         Наши склады находяться по адресам:\n{address_text}
         \nВыберете подходящий Вам склад.
         \nТак же у нас есть бесплатная доставка до склада.

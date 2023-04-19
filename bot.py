@@ -18,5 +18,5 @@ if __name__ == "__main__":
     env = Env()
     env.read_env()
 
-    token = env('TELEGRAM_TOKEN')
+    token = env('TG_CUSTOMER_BOT_TOKEN')
     main()
