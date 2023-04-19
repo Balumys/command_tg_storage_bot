@@ -1,10 +1,11 @@
 from telegram.ext import CommandHandler, MessageHandler, Filters
-from .markups import start_keyboard, storage
+from markups import start_keyboard, storage
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-#from db import Base, Customer, Orders, Storage, Box
+from db import Base, Customer, Orders, Storage, Box
 
-engine = create_engine('sqlite:////../database.db')
+
+engine = create_engine('sqlite:///database.db')
 Session = sessionmaker(bind=engine)
 session = Session()
 

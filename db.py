@@ -3,8 +3,7 @@ import datetime
 from sqlalchemy import create_engine, ForeignKey, Column, String, Integer, DateTime, Float
 from sqlalchemy.orm import relationship, declarative_base
 
-engine = create_engine('sqlite:////Users/sergeiperevera/PycharmProjects/telegram/command_tg_storage_bot/database.db',
-                       echo=True)
+engine = create_engine('sqlite:///database.db', echo=True)
 Base = declarative_base()
 
 
