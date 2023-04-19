@@ -5,8 +5,7 @@ def start_keyboard():
     button_list = [
         [KeyboardButton("🎿 Оформить заказ"),
          KeyboardButton("📕 Правила хранения")],
-        [KeyboardButton("💰 Цены"),
-         KeyboardButton("🔙 Назад")]
+        [KeyboardButton("💰 Цены")]
     ]
     reply_markup = ReplyKeyboardMarkup(button_list, resize_keyboard=True)
     return reply_markup
