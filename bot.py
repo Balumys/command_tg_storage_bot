@@ -1,6 +1,6 @@
 import handlers
 
-from telegram.ext import Updater
+from telegram.ext import Updater, CallbackQueryHandler
 from environs import Env
 
 
@@ -13,6 +13,7 @@ def main():
     updater = Updater(token)
     updater.dispatcher.add_handler(handlers.start_handler)
     updater.dispatcher.add_handler(handlers.button_handler)
+    updater.dispatcher.add_handler(CallbackQueryHandler(handlers.take_item_back_inline_menu, pattern='take_items'))
 
     updater.start_polling()
     updater.idle()

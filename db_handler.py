@@ -1,3 +1,4 @@
+from datetime import datetime
 from db import Base, Customer, Orders, Storage, Box
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -10,8 +11,19 @@ Session = sessionmaker(bind=engine)
 
 def get_customer_id(user_id):
     session = Session()
-    tg_id = session.query(Customer.customer_id).filter_by(customer_id=user_id).one_or_none()
+    tg_id = session.query(Customer.customer_id).filter_by(customer_id=user_id).one_or_none()[0]
+    session.close()
     return tg_id
+
+
+def get_stored_boxes(customer_id):
+    session = Session()
+    boxes = session.query(Box).join(Orders).filter(Orders.customer_id == customer_id).all()
+    boxes_list = ['У Вас на хранении:']
+    for box in boxes:
+        boxes_list.append(f'Коробка *{box.size}* срок хранения до *{datetime.date(box.order.expired_at)}*')
+    session.close()
+    return '\n'.join(boxes_list)
 
 
 def add_customer(first_name, last_name):
