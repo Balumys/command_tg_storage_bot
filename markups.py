@@ -11,18 +11,21 @@ def start_keyboard():
     return reply_markup
 
 
-def back_to_main_menu():
+def back_to_main_keyboard():
     button_list = [[KeyboardButton("⬅️ Назад в главное меню")]]
     return ReplyKeyboardMarkup(button_list)
 
 
-def take_items():
+""" Раздел Мои заказы """
+
+
+def take_items_keyboard():
     button_list = [[InlineKeyboardButton("Забрать вещи с хранения", callback_data='take_items')]]
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
 
 
-def take_items_choice():
+def take_items_choice_keyboard():
     button_list = [
         [InlineKeyboardButton("Забрать все вещи", callback_data='take_items_all'),
          InlineKeyboardButton("Забрать часть вещей", callback_data='take_items_partial')]
@@ -31,10 +34,25 @@ def take_items_choice():
     return reply_markup
 
 
-def take_items_back_delivery():
+def take_items_back_delivery_keyboard():
     button_list = [
         [InlineKeyboardButton("Доставка (платная)", callback_data='take_items_back_delivery'),
          InlineKeyboardButton("Самовывоз", callback_data='take_items_back_myself')]
+    ]
+    reply_markup = InlineKeyboardMarkup(button_list)
+    return reply_markup
+
+
+""" Раздел Оформить Заказ"""
+
+
+def box_size_keyboard():
+    button_list = [
+        [InlineKeyboardButton("📦 S-Size", callback_data='S-size'),
+         InlineKeyboardButton("📦 M-Size", callback_data='M-size')],
+        [InlineKeyboardButton("📦 L-Size", callback_data='L-size'),
+         InlineKeyboardButton("📦 >L-Size", callback_data='>L-size')],
+        [InlineKeyboardButton("❌ Я не хочу замерять сам", callback_data='dont_want_measure')]
     ]
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
