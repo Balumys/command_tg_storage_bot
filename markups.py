@@ -5,10 +5,15 @@ def start_keyboard():
     button_list = [
         [KeyboardButton("🎿 Оформить заказ"),
          KeyboardButton("📕 Правила хранения")],
-        [KeyboardButton("💰 Цены")]
+        [KeyboardButton("📦 Мои заказы")]
     ]
     reply_markup = ReplyKeyboardMarkup(button_list, resize_keyboard=True)
     return reply_markup
+
+
+def back_to_main_menu():
+    back_button = [[KeyboardButton("⬅️ Назад в главное меню")]]
+    return ReplyKeyboardMarkup(back_button)
 
 
 def storage(addresses):
