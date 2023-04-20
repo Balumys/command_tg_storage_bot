@@ -11,18 +11,7 @@ def start_keyboard():
     return reply_markup
 
 
-def back_to_main_keyboard():
-    button_list = [[KeyboardButton("⬅️ Назад в главное меню")]]
-    return ReplyKeyboardMarkup(button_list)
-
-
 """ Раздел Мои заказы """
-
-
-def take_items_keyboard():
-    button_list = [[InlineKeyboardButton("Забрать вещи с хранения", callback_data='take_items')]]
-    reply_markup = InlineKeyboardMarkup(button_list)
-    return reply_markup
 
 
 def take_items_choice_keyboard():

@@ -1,6 +1,6 @@
 import db_handler
 from telegram.ext import CommandHandler, MessageHandler, Filters
-from markups import start_keyboard, back_to_main_keyboard, take_items_choice_keyboard, take_items_keyboard, \
+from markups import start_keyboard, take_items_choice_keyboard, \
     take_items_back_delivery_keyboard, box_size_keyboard
 from db import Base, Customer, Orders, Storage, Box
 from environs import Env
@@ -24,31 +24,26 @@ def start(update, context):
 def button(update, context):
     text = update.message.text
     if text == "🎿 Оформить заказ":
+        # INLINE MENU
         update.message.reply_text(
             'Тут будет меню выбора бокса', parse_mode='Markdown',
             reply_markup=box_size_keyboard()
         )
     elif text == "📕 Правила хранения":
         storage_rules = env.str('STORAGE_RULES')
-        update.message.reply_text(storage_rules, parse_mode='Markdown', reply_markup=back_to_main_keyboard())
+        update.message.reply_text(storage_rules, parse_mode='Markdown')
     elif text == "📦 Мои заказы":
         user_id = update.message.from_user.id
         customer_id = db_handler.get_customer_id(user_id)
         if customer_id:
             # INLINE MENU
             my_boxes = db_handler.get_stored_boxes(customer_id)
-            update.message.reply_text(my_boxes, parse_mode='Markdown', reply_markup=take_items_keyboard())
+            update.message.reply_text(my_boxes, parse_mode='Markdown', reply_markup=take_items_choice_keyboard())
         else:
             update.message.reply_text(
                 'У вас еще нет заказов',
                 parse_mode='Markdown',
-                reply_markup=back_to_main_keyboard()
             )
-    elif text == "⬅️ Назад в главное меню":
-        update.message.reply_text(
-            "Главное меню",
-            reply_markup=start_keyboard()
-        )  # NOT SURE HOW UPDATE KEYBOARD WITHOUT SENDING A MESSAGE
 
 
 def take_item_back_inline_menu(update, context):
