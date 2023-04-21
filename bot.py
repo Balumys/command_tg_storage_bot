@@ -14,7 +14,6 @@ def main():
     updater.dispatcher.add_handler(handlers.start_handler)
     updater.dispatcher.add_handler(handlers.button_handler)
     updater.dispatcher.add_handler(CallbackQueryHandler(handlers.callback_handler))
-    updater.dispatcher.add_handler(CallbackQueryHandler(handlers.make_order_inline_menu, pattern='^make_order'))
 
     updater.start_polling()
     updater.idle()
