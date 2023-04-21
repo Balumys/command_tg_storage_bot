@@ -37,11 +37,22 @@ def take_items_back_delivery_keyboard():
 
 def box_size_keyboard():
     button_list = [
-        [InlineKeyboardButton("📦 S-Size", callback_data='S-size'),
-         InlineKeyboardButton("📦 M-Size", callback_data='M-size')],
-        [InlineKeyboardButton("📦 L-Size", callback_data='L-size'),
-         InlineKeyboardButton("📦 >L-Size", callback_data='>L-size')],
+        [InlineKeyboardButton("📦 S-Size (1кв.м)", callback_data='S'),
+         InlineKeyboardButton("📦 M-Size (3кв.м)", callback_data='M')],
+        [InlineKeyboardButton("📦 L-Size (5кв.м)", callback_data='L'),
+         InlineKeyboardButton("📦 >L-Size (более 5кв.м)", callback_data='XL')],
         [InlineKeyboardButton("❌ Я не хочу замерять сам", callback_data='dont_want_measure')]
+    ]
+    reply_markup = InlineKeyboardMarkup(button_list)
+    return reply_markup
+
+
+def storage_periods_keyboard():
+    button_list = [
+        [InlineKeyboardButton("1 месяц", callback_data='1_month'),
+         InlineKeyboardButton("3 месяца", callback_data='3_month')],
+        [InlineKeyboardButton("6 месяцев", callback_data='6_month'),
+         InlineKeyboardButton("12 месяцев", callback_data='12_month')]
     ]
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
