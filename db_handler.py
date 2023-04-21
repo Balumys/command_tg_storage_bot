@@ -11,9 +11,9 @@ Session = sessionmaker(bind=engine)
 
 def get_customer_id(user_id):
     session = Session()
-    tg_id = session.query(Customer.customer_id).filter_by(customer_id=user_id).one_or_none()[0]
+    tg_id = session.query(Customer.customer_id).filter_by(customer_id=user_id).one_or_none()
     session.close()
-    return tg_id
+    return tg_id[0] if tg_id is not None else None
 
 
 def get_stored_boxes(customer_id):
