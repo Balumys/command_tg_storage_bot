@@ -1,8 +1,12 @@
+import re
+
+from telegram import ReplyKeyboardRemove
+
 import db_handler
 import markups as m
 import sqlalchemy
 
-from telegram.ext import CommandHandler, MessageHandler, Filters
+from telegram.ext import CommandHandler, MessageHandler, Filters, ConversationHandler, CallbackQueryHandler
 from db import Base, Customer, Orders, Storage, Box
 
 
@@ -60,6 +64,8 @@ def button(update, context):
                 'Простите, но кажется у вас еще нет барохла на хранении 😞\n Пожалуйста оформите заказ.',
                 parse_mode='Markdown',
             )
+    elif context.user_data.get('state') == 'PHONE':
+        print('TYT')
 
 
 def callback_handler(update, context):
@@ -75,6 +81,13 @@ def callback_handler(update, context):
         storage_period_inline_menu(update, context)
     if query.data in ['delivery', 'self_delivery']:
         is_delivery_inline_menu(update, context)
+    if query.data == 'accept':
+        pass
+    if query.data == 'not_accept':
+        text = 'Нам очень жаль'
+        query.edit_message_text(
+            text=text
+        )
 
 
 def take_item_back_inline_menu(update, context):
@@ -166,6 +179,23 @@ def is_delivery_inline_menu(update, context):
         query.edit_message_text(
             text=text,
             reply_markup=m.personal_data_agreement_keyboard(),
+            parse_mode='markdown'
+        )
+
+
+def personal_data_agreement_inline_menu(update, context):
+    query = update.callback_query
+    query.answer()
+    if query.data in ['1_month', '3_month', '6_month', '12_month']:
+        Orders.period = int(query.data.split('_')[0])
+        text = f'Отлично, вы хотите поместить коробку размером' \
+               f'\n*{Box.size}* на срок *{Orders.period} {month_spelling(Orders.period)}*.\n' \
+               f'Пожалуйста выбирете способ доставки:\n' \
+               f'Курьерская служба *(абсолютно бесплатно)*\n' \
+               f'Привезете сами на наш склад по адресу: *{db_handler.get_storage_addresses()}*'
+        query.edit_message_text(
+            text=text,
+            reply_markup=m.is_delivery_keyboard(),
             parse_mode='markdown'
         )
 
