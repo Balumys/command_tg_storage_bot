@@ -16,14 +16,24 @@ def get_customer_id(user_id):
     return tg_id[0] if tg_id is not None else None
 
 
-def get_stored_boxes(customer_id):
+# def get_stored_boxes(customer_id):
+#     session = Session()
+#     boxes = session.query(Box).join(Orders).filter(Orders.customer_id == customer_id).all()
+#     boxes_list = ['У Вас на хранении:']
+#     for box in boxes:
+#         boxes_list.append(f'Коробка *{box.size}* срок хранения до *{datetime.date(box.orders[0].expired_at)}*')
+#     session.close()
+#     return '\n'.join(boxes_list)
+
+
+def get_customer_orders(customer_id):
     session = Session()
-    boxes = session.query(Box).join(Orders).filter(Orders.customer_id == customer_id).all()
-    boxes_list = ['У Вас на хранении:']
-    for box in boxes:
-        boxes_list.append(f'Коробка *{box.size}* срок хранения до *{datetime.date(box.order.expired_at)}*')
+    orders = session.query(Orders).filter(Orders.customer_id == customer_id).all()
+    boxes = ['У Вас на хранении:']
+    for order in orders:
+        boxes.append(f'Коробка {order.box.size}, срок хранения {order.expired_at}')
     session.close()
-    return '\n'.join(boxes_list)
+    return '\n'.join(boxes)
 
 
 def add_customer(first_name, last_name):

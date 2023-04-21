@@ -44,7 +44,7 @@ def button(update, context):
         customer_id = db_handler.get_customer_id(user_id)
         if customer_id:
             # INLINE MENU
-            my_boxes = db_handler.get_stored_boxes(customer_id)
+            my_boxes = db_handler.get_customer_orders(customer_id)
             update.message.reply_text(my_boxes, parse_mode='Markdown', reply_markup=m.take_items_choice_keyboard())
         else:
             update.message.reply_text(
