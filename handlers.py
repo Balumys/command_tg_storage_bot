@@ -1,8 +1,12 @@
+import re
+
+from telegram import ReplyKeyboardRemove
+
 import db_handler
 import markups as m
 import sqlalchemy
 
-from telegram.ext import CommandHandler, MessageHandler, Filters
+from telegram.ext import CommandHandler, MessageHandler, Filters, ConversationHandler, CallbackQueryHandler
 from db import Base, Customer, Orders, Storage, Box
 
 
@@ -68,6 +72,8 @@ def button(update, context):
                 parse_mode='Markdown',
                 # кнопка назад?
             )
+    elif context.user_data.get('state') == 'PHONE':
+        print('TYT')
 
 
 def callback_handler(update, context):
@@ -84,6 +90,13 @@ def callback_handler(update, context):
         storage_period_inline_menu(update, context)
     if query.data in ['delivery', 'self_delivery']:
         is_delivery_inline_menu(update, context)
+    if query.data == 'accept':
+        pass
+    if query.data == 'not_accept':
+        text = 'Нам очень жаль'
+        query.edit_message_text(
+            text=text
+        )
     if query.data in ['order_callback']:
         order_callback(update, context)
 
@@ -180,20 +193,6 @@ def is_delivery_inline_menu(update, context):
             reply_markup=m.personal_data_agreement_keyboard(),
             parse_mode='markdown'
         )
-
-
-def order_callback(update, context):
-    print(1)
-    query = update.callback_query
-    query.answer()
-    #user_id = update.effective_message.chat_id
-    #orders = db_handler.get_customer_orders(user_id)
-    print(query.data)
-    # query.edit_message_text(
-    #     query.data,
-    #     reply_markup=m.take_items_choice_keyboard(),
-    #     parse_mode='markdown'
-    # )
 
 
 start_handler = CommandHandler('start', start)

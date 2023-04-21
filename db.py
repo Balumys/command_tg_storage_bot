@@ -36,6 +36,17 @@ class Orders(Base):
     box_id = Column(Integer, ForeignKey('box.id', ondelete='CASCADE'))
     box = relationship('Box', uselist=False, back_populates='order', cascade='all, delete')
 
+    period = Column(Integer)
+
+    def calculate_expired_at(self):
+        periods = {
+            1: datetime.timedelta(days=30),
+            3: datetime.timedelta(days=90),
+            6: datetime.timedelta(days=180),
+            12: datetime.timedelta(days=365)
+        }
+        self.expired_at = self.created_at + periods[self.period]
+
     def __repr__(self):
         return f"({self.id} {self.customer_id} expired at {self.expired_at})"
 
@@ -45,6 +56,7 @@ class Storage(Base):
 
     id = Column(Integer, primary_key=True)
     address = Column(String(250), nullable=False)
+
     # area = Column(Float)  # WE DON'T NEED THIS NOW
     # free_space = Column(Float)  # WE DON'T NEED THIS NOW
 
