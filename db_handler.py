@@ -36,9 +36,9 @@ def get_customer_orders(customer_id):
     return '\n'.join(boxes)
 
 
-def add_customer(first_name, last_name):
+def add_customer(first_name, user_id):
     session = Session()
-    customer = Customer(name=f"{first_name} {last_name}", email='some_two@mail.com', phone='+79000000')
+    customer = Customer(name=first_name, customer_id=user_id)
     session.add(customer)
     session.commit()
     session.close()

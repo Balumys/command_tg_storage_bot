@@ -1,14 +1,23 @@
 import db_handler
 import markups as m
+import sqlalchemy
+
 from telegram.ext import CommandHandler, MessageHandler, Filters
 from db import Base, Customer, Orders, Storage, Box
 
 
 def start(update, context):
-    hello_message_to_new_user = 'Вас приветствует *Garbage Collector* — Склад индивидуального хранения! Вас ' \
-                                'интересует аренда бокса? С радостью проконсультируем по нашим услугам. А пока ' \
-                                'посмотрите примеры и тд... '
+    hello_message_to_new_user = """
+        Вас приветствует *Garbage Collector* — Склад индивидуального хранения!
+        Вас интересует аренда бокса? С радостью проконсультируем по нашим услугам.
+        А пока посмотрите примеры и тд...,
+    """
     first_name = update.message.from_user.first_name
+    user_id = update.message.from_user.id
+    try:
+        db_handler.add_customer(first_name, user_id)
+    except sqlalchemy.exc.IntegrityError:
+        print('Пользователь уже зарегистрирован')
     photo_path = 'media/storage.jpg'
     with open(photo_path, 'rb') as file:
         update.message.reply_photo(
