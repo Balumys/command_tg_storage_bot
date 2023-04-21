@@ -28,6 +28,7 @@ def start(update, context):
         )
 
 
+
 def button(update, context):
     text = update.message.text
     if text == "🎿 Оформить заказ":
@@ -42,29 +43,37 @@ def button(update, context):
             parse_mode='Markdown',
             reply_markup=m.box_size_keyboard()
         )
+        return 0  # ORDERS
+
     elif text == "📕 Правила хранения":
         storage_rules = 'Спасибо, что выбрали наш сервис сезонного хранения вещей *Garbage Collector*. Наше хранилище ' \
                         'не принимает в хранение *жидкости, наркотики, биткоины, оружие и другие неприемлемые вещи*. ' \
                         'У нас есть ограничение на количество хранимых вещей. Хранение происходит на свой страх и ' \
                         'риск. *Пожалуйста, забирайте свои вещи вовремя*, чтобы избежать огромных финансовых потерь. '
         update.message.reply_text(storage_rules, parse_mode='Markdown')
+
     elif text == "📦 Мои заказы":
         user_id = update.message.from_user.id
-        customer_id = db_handler.get_customer_id(user_id)
-        if customer_id:
-            # INLINE MENU
-            my_boxes = db_handler.get_customer_orders(customer_id)
-            update.message.reply_text(my_boxes, parse_mode='Markdown', reply_markup=m.take_items_choice_keyboard())
+        orders = db_handler.get_customer_orders(user_id)
+        if orders:
+            update.message.reply_text(
+                'Выберите номер заказа:',
+                parse_mode='Markdown',
+                reply_markup=m.customer_orders(orders)
+            )
         else:
             update.message.reply_text(
-                'Простите, но кажется у вас еще нет барохла на хранении 😞\n Пожалуйста оформите заказ.',
+                'Простите, но кажется у вас еще нет барахла на хранении 😞\n',
+                'Пожалуйста оформите заказ.',
                 parse_mode='Markdown',
+                # кнопка назад?
             )
 
 
 def callback_handler(update, context):
     query = update.callback_query
     query.answer()
+    print(query.data)
     # TAKE ITEMS BACK
     if query.data in ['take_items_all', 'take_items_partial']:
         take_item_back_inline_menu(update, context)
@@ -75,6 +84,8 @@ def callback_handler(update, context):
         storage_period_inline_menu(update, context)
     if query.data in ['delivery', 'self_delivery']:
         is_delivery_inline_menu(update, context)
+    if query.data in ['order_callback']:
+        order_callback(update, context)
 
 
 def take_item_back_inline_menu(update, context):
@@ -131,7 +142,7 @@ def storage_period_inline_menu(update, context):
         Orders.period = int(query.data.split('_')[0])
         text = f'Отлично, вы хотите поместить коробку размером' \
                f'\n*{Box.size}* на срок *{Orders.period} {month_spelling(Orders.period)}*.\n' \
-               f'Пожалуйста выбирете способ доставки:\n' \
+               f'Пожалуйста выберите способ доставки:\n' \
                f'Курьерская служба *(абсолютно бесплатно)*\n' \
                f'Привезете сами на наш склад по адресу: {db_handler.get_storage_addresses()}'
         query.edit_message_text(
@@ -139,6 +150,7 @@ def storage_period_inline_menu(update, context):
             reply_markup=m.is_delivery_keyboard(),
             parse_mode='markdown'
         )
+        return 1  # DELIVERY
 
 
 def is_delivery_inline_menu(update, context):
@@ -151,14 +163,14 @@ def is_delivery_inline_menu(update, context):
     if query.data == 'delivery':
         Orders.is_delivery = is_delivery_value[query.data]
         text = f'Прекрасно, вы выбрали доставку курьерской службой:\n' \
-               f'Нам подтребуются ваши контактные данные.\n' \
+               f'Нам потребуются ваши контактные данные.\n' \
                f'Но прежде чем продолжить, пожалуйста примите\n*Согласие на обработку персональных данных*'
         query.edit_message_text(
             text=text,
             reply_markup=m.personal_data_agreement_keyboard(),
             parse_mode='markdown'
         )
-    else:
+    if query.data == 'self_delivery':
         Orders.is_delivery = is_delivery_value[query.data]
         text = f'Прекрасно, вы привезете вещи сами по адресу {db_handler.get_storage_addresses()}\n' \
                f'Нам подтребуются ваши контактные данные.\n' \
@@ -168,6 +180,20 @@ def is_delivery_inline_menu(update, context):
             reply_markup=m.personal_data_agreement_keyboard(),
             parse_mode='markdown'
         )
+
+
+def order_callback(update, context):
+    print(1)
+    query = update.callback_query
+    query.answer()
+    #user_id = update.effective_message.chat_id
+    #orders = db_handler.get_customer_orders(user_id)
+    print(query.data)
+    # query.edit_message_text(
+    #     query.data,
+    #     reply_markup=m.take_items_choice_keyboard(),
+    #     parse_mode='markdown'
+    # )
 
 
 start_handler = CommandHandler('start', start)

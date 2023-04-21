@@ -37,7 +37,7 @@ class Orders(Base):
     box = relationship('Box', uselist=False, back_populates='order', cascade='all, delete')
 
     def __repr__(self):
-        return f"({self.order_id} {self.customer_id} expired at {self.expired_at})"
+        return f"({self.id} {self.customer_id} expired at {self.expired_at})"
 
 
 class Storage(Base):
