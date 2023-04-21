@@ -8,13 +8,22 @@ def main():
     env = Env()
     env.read_env()
 
-    token = env('TG_CUSTOMER_BOT_TOKEN')
+    tg_bot_token = env('TG_CUSTOMER_BOT_TOKEN')
 
-    updater = Updater(token)
-    updater.dispatcher.add_handler(handlers.start_handler)
-    updater.dispatcher.add_handler(handlers.button_handler)
-    updater.dispatcher.add_handler(CallbackQueryHandler(handlers.callback_handler))
-    updater.dispatcher.add_handler(CallbackQueryHandler(handlers.make_order_inline_menu, pattern='^make_order'))
+    updater = Updater(tg_bot_token)
+    dispatcher = updater.dispatcher
+
+    dispatcher.add_handler(handlers.start_handler)
+    dispatcher.add_handler(handlers.button_handler)
+    dispatcher.add_handler(
+        CallbackQueryHandler(handlers.take_item_back_inline_menu, pattern='take_items')
+    )
+    dispatcher.add_handler(
+        CallbackQueryHandler(handlers.take_item_back_inline_menu, pattern='take_items')
+    )
+    dispatcher.add_handler(
+        CallbackQueryHandler(handlers.make_order_inline_menu)
+    )
 
     updater.start_polling()
     updater.idle()
