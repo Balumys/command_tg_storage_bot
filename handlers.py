@@ -2,13 +2,12 @@ import db_handler
 import markups as m
 from telegram.ext import CommandHandler, MessageHandler, Filters
 from db import Base, Customer, Orders, Storage, Box
-from environs import Env
-
-env = Env()
 
 
 def start(update, context):
-    hello_message_to_new_user = env.str('HELLO_MESSAGE')
+    hello_message_to_new_user = 'Вас приветствует *Garbage Collector* — Склад индивидуального хранения! Вас ' \
+                                'интересует аренда бокса? С радостью проконсультируем по нашим услугам. А пока ' \
+                                'посмотрите примеры и тд... '
     first_name = update.message.from_user.first_name
     photo_path = 'media/storage.jpg'
     with open(photo_path, 'rb') as file:
@@ -35,7 +34,10 @@ def button(update, context):
             reply_markup=m.box_size_keyboard()
         )
     elif text == "📕 Правила хранения":
-        storage_rules = env.str('STORAGE_RULES')
+        storage_rules = 'Спасибо, что выбрали наш сервис сезонного хранения вещей *Garbage Collector*. Наше хранилище ' \
+                        'не принимает в хранение *жидкости, наркотики, биткоины, оружие и другие неприемлемые вещи*. ' \
+                        'У нас есть ограничение на количество хранимых вещей. Хранение происходит на свой страх и ' \
+                        'риск. *Пожалуйста, забирайте свои вещи вовремя*, чтобы избежать огромных финансовых потерь. '
         update.message.reply_text(storage_rules, parse_mode='Markdown')
     elif text == "📦 Мои заказы":
         user_id = update.message.from_user.id
