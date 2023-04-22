@@ -18,15 +18,12 @@ def main():
     env = Env()
     env.read_env()
 
+    ORDERS, DELIVERY, PERSONAL_DATA = range(3)
     token = env('TG_CUSTOMER_BOT_TOKEN')
 
     updater = Updater(token)
-    ORDERS, DELIVERY = range(2)
-    # updater.dispatcher.add_handler(handlers.start_handler)
-    # updater.dispatcher.add_handler(handlers.button_handler)
-    # updater.dispatcher.add_handler(CallbackQueryHandler(handlers.callback_handler))
 
-    conv_handler = ConversationHandler(
+    conversation_handler = ConversationHandler(
         entry_points=[
             CommandHandler("start", handlers.start),
             MessageHandler(Filters.text, handlers.button)
@@ -49,13 +46,18 @@ def main():
                     handlers.is_delivery_inline_menu,
                     pattern='^(delivery|self_delivery)$',
                 ),
-                # CallbackQueryHandler(end, pattern="^" + str(TWO) + "$"),
+            ],
+            PERSONAL_DATA: [
+                CallbackQueryHandler(
+                    handlers.personal_data_menu,
+                    pattern='^(accept|not_accept)$',
+                ),
             ],
         },
         fallbacks=[CommandHandler("start", handlers.start)],
     )
 
-    updater.dispatcher.add_handler(conv_handler)
+    updater.dispatcher.add_handler(conversation_handler)
     updater.start_polling()
     updater.idle()
 

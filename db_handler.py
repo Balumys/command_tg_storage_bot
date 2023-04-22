@@ -48,3 +48,7 @@ def get_storage_addresses():
     session = Session()
     addresses = [row[0] for row in session.query(Storage.address).all()]
     return '\n'.join(addresses)
+
+
+def create_order():
+    pass
