@@ -14,11 +14,11 @@ from db import Base, Customer, Orders, Storage, Box
 
 
 def start(update, context):
-    hello_message_to_new_user = """
-        Вас приветствует *Garbage Collector* — Склад индивидуального хранения!
-        Вас интересует аренда бокса? С радостью проконсультируем по нашим услугам.
-        А пока посмотрите примеры и тд...,
-    """
+    hello_message_to_new_user = (
+        "Вас приветствует *Garbage Collector* — Склад индивидуального хранения!\n"
+        "Вас интересует аренда бокса? С радостью проконсультируем по нашим услугам.\n"
+        "А пока посмотрите примеры и тд...,\n"
+    )
     first_name = update.message.from_user.first_name
     user_id = update.message.from_user.id
     try:
@@ -29,7 +29,8 @@ def start(update, context):
     with open(photo_path, 'rb') as file:
         update.message.reply_photo(
             photo=file,
-            caption=f"Приветствуем Вас *{first_name}*, {hello_message_to_new_user}",
+            caption=f"Приветствуем Вас *{first_name}*, {hello_message_to_new_user}\n"
+                    f"[*ОСТОРОЖНО РЕКЛАМА*](bit.ly/41Mqpoj)",
             reply_markup=m.start_keyboard(),
             parse_mode='markdown'
         )
@@ -87,7 +88,7 @@ def box_size_inline_menu(update, context):
     if query.data in ['S', 'M', 'L', 'XL']:
         # Box.size = query.data
         context.user_data['box_size'] = query.data
-        text = f'Вы выбрали бокс *{query.data}-размера*\n' \
+        text = f'Вы выбрали бокс *{context.user_data["box_size"]}-размера*\n' \
                'Пожалуйста выберите срок хранения.\n' \
                'Мы рады предложить Вам следующие варианты:'
         query.edit_message_text(
@@ -96,7 +97,7 @@ def box_size_inline_menu(update, context):
             parse_mode='markdown'
         )
     elif query.data == 'dont_want_measure':
-        Box.size = 'Будет уточнен'
+        context.user_data['box_size'] = 'Будет уточнен'
         text = 'Хорошо, мы замерим сами когда вы приедете на склад или замерит наш курьер'
         query.edit_message_text(
             text=text,
@@ -121,7 +122,8 @@ def storage_period_inline_menu(update, context):
         # Orders.period = int(query.data.split('_')[0])
         context.user_data['period'] = int(query.data.split('_')[0])
         text = f'Отлично, вы хотите поместить коробку размером' \
-               f'\n*{Box.size}* на срок *{Orders.period} {month_spelling(Orders.period)}*.\n' \
+               f'\n*{context.user_data["box_size"]}* на срок' \
+               f' *{context.user_data["period"]} {month_spelling(context.user_data["period"])}*.\n' \
                f'Пожалуйста выберите способ доставки:\n' \
                f'Курьерская служба *(абсолютно бесплатно)*\n' \
                f'Привезете сами на наш склад по адресу: {db_handler.get_storage_addresses()}'
