@@ -32,7 +32,7 @@ def main():
             ORDERS: [
                 CallbackQueryHandler(
                     handlers.box_size_inline_menu,
-                    pattern='^(S|M|L|XL)$'
+                    pattern='^(S|M|L|XL|dont_want_measure)$'
                 ),
                 CallbackQueryHandler(
                     handlers.storage_period_inline_menu,
