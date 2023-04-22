@@ -3,13 +3,6 @@ import markups as m
 import sqlalchemy
 
 from telegram import ReplyKeyboardRemove
-from telegram.ext import (
-    CommandHandler,
-    MessageHandler,
-    Filters,
-    ConversationHandler,
-    CallbackQueryHandler,
-)
 from db import Base, Customer, Orders, Storage, Box
 
 
@@ -81,12 +74,11 @@ def button(update, context):
 
 # Ветка Оформить заказ
 
+
 def box_size_inline_menu(update, context):
     query = update.callback_query
     query.answer()
     if query.data in ['S', 'M', 'L', 'XL']:
-        # Box.size = query.data
-        context.user_data['box_size'] = query.data
         text = f'Вы выбрали бокс *{query.data}-размера*\n' \
                'Пожалуйста выберите срок хранения.\n' \
                'Мы рады предложить Вам следующие варианты:'
@@ -95,6 +87,7 @@ def box_size_inline_menu(update, context):
             reply_markup=m.storage_periods_keyboard(),
             parse_mode='markdown'
         )
+        context.user_data['box_size'] = query.data
     elif query.data == 'dont_want_measure':
         Box.size = 'Будет уточнен'
         text = 'Хорошо, мы замерим сами когда вы приедете на склад или замерит наш курьер'
@@ -102,6 +95,7 @@ def box_size_inline_menu(update, context):
             text=text,
             reply_markup=m.storage_periods_keyboard()
         )
+        context.user_data['box_size'] = 'Unknown'
     return 0  # ORDERS
 
 
@@ -119,7 +113,6 @@ def storage_period_inline_menu(update, context):
     query.answer()
     if query.data in ['1_month', '3_month', '6_month', '12_month']:
         # Orders.period = int(query.data.split('_')[0])
-        context.user_data['period'] = int(query.data.split('_')[0])
         text = f'Отлично, вы хотите поместить коробку размером' \
                f'\n*{Box.size}* на срок *{Orders.period} {month_spelling(Orders.period)}*.\n' \
                f'Пожалуйста выберите способ доставки:\n' \
@@ -130,6 +123,7 @@ def storage_period_inline_menu(update, context):
             reply_markup=m.is_delivery_keyboard(),
             parse_mode='markdown'
         )
+    context.user_data['period'] = int(query.data.split('_')[0])
     return 1  # DELIVERY
 
 
@@ -171,6 +165,7 @@ def personal_data_menu(update, context):
     query = update.callback_query
     query.answer()
     user_data = context.user_data
+    print(user_data)
     if query.data == 'accept':
         order = db_handler.create_order(
             customer_id=user_data['user_id'],
