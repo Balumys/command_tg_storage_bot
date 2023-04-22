@@ -1,10 +1,15 @@
-import re
 import db_handler
 import markups as m
 import sqlalchemy
 
 from telegram import ReplyKeyboardRemove
-from telegram.ext import CommandHandler, MessageHandler, Filters, ConversationHandler, CallbackQueryHandler
+from telegram.ext import (
+    CommandHandler,
+    MessageHandler,
+    Filters,
+    ConversationHandler,
+    CallbackQueryHandler,
+)
 from db import Base, Customer, Orders, Storage, Box
 
 
@@ -32,6 +37,8 @@ def start(update, context):
 
 def button(update, context):
     text = update.message.text
+    user_id = update.message.from_user.id
+    context.user_data['user_id'] = user_id
     if text == "🎿 Оформить заказ":
         storage_address = db_handler.get_storage_addresses()
         # INLINE MENU
@@ -64,11 +71,125 @@ def button(update, context):
             )
         else:
             update.message.reply_text(
-                'Простите, но кажется у вас еще нет барахла на хранении 😞\n',
-                'Пожалуйста оформите заказ.',
+                text=(
+                    'Простите, но кажется у вас еще нет барахла на хранении 😞\n' \
+                    'Пожалуйста оформите заказ.'
+                ),
                 parse_mode='Markdown',
                 # кнопка назад?
             )
+
+# Ветка Оформить заказ
+
+def box_size_inline_menu(update, context):
+    query = update.callback_query
+    query.answer()
+    if query.data in ['S', 'M', 'L', 'XL']:
+        # Box.size = query.data
+        context.user_data['box_size'] = query.data
+        text = f'Вы выбрали бокс *{query.data}-размера*\n' \
+               'Пожалуйста выберите срок хранения.\n' \
+               'Мы рады предложить Вам следующие варианты:'
+        query.edit_message_text(
+            text=text,
+            reply_markup=m.storage_periods_keyboard(),
+            parse_mode='markdown'
+        )
+    elif query.data == 'dont_want_measure':
+        Box.size = 'Будет уточнен'
+        text = 'Хорошо, мы замерим сами когда вы приедете на склад или замерит наш курьер'
+        query.edit_message_text(
+            text=text,
+            reply_markup=m.storage_periods_keyboard()
+        )
+    return 0  # ORDERS
+
+
+def month_spelling(num_month):
+    if num_month == 1:
+        return 'месяц'
+    elif num_month in [2, 3, 4]:
+        return 'месяца'
+    else:
+        return 'месяцев'
+
+
+def storage_period_inline_menu(update, context):
+    query = update.callback_query
+    query.answer()
+    if query.data in ['1_month', '3_month', '6_month', '12_month']:
+        # Orders.period = int(query.data.split('_')[0])
+        context.user_data['period'] = int(query.data.split('_')[0])
+        text = f'Отлично, вы хотите поместить коробку размером' \
+               f'\n*{Box.size}* на срок *{Orders.period} {month_spelling(Orders.period)}*.\n' \
+               f'Пожалуйста выберите способ доставки:\n' \
+               f'Курьерская служба *(абсолютно бесплатно)*\n' \
+               f'Привезете сами на наш склад по адресу: {db_handler.get_storage_addresses()}'
+        query.edit_message_text(
+            text=text,
+            reply_markup=m.is_delivery_keyboard(),
+            parse_mode='markdown'
+        )
+    return 1  # DELIVERY
+
+
+def is_delivery_inline_menu(update, context):
+    query = update.callback_query
+    query.answer()
+    is_delivery = {
+        'delivery': 1,
+        'self_delivery': 0
+    }
+    if query.data == 'delivery':
+
+        # Orders.is_delivery = is_delivery_value[query.data]
+        text = 'Прекрасно, вы выбрали доставку курьерской службой:\n' \
+               'Нам потребуются ваши контактные данные.\n' \
+               'Но прежде чем продолжить, пожалуйста примите\n' \
+               '*Согласие на обработку персональных данных*'
+        query.edit_message_text(
+            text=text,
+            reply_markup=m.personal_data_agreement_keyboard(),
+            parse_mode='markdown'
+        )
+    if query.data == 'self_delivery':
+        # Orders.is_delivery = is_delivery_value[query.data]
+        text = f'Прекрасно, вы привезете вещи сами по адресу {db_handler.get_storage_addresses()}\n' \
+               'Нам потребуются ваши контактные данные.\n' \
+               'Но прежде чем продолжить, пожалуйста примите\n' \
+               '*Согласие на обработку персональных данных*'
+        query.edit_message_text(
+            text=text,
+            reply_markup=m.personal_data_agreement_keyboard(),
+            parse_mode='markdown'
+        )
+    context.user_data['is_delivery'] = is_delivery[query.data]
+    return 2  # PERSONAL_DATA
+
+
+def personal_data_menu(update, context):
+    query = update.callback_query
+    query.answer()
+    user_data = context.user_data
+    if query.data == 'accept':
+        order = db_handler.create_order(
+            customer_id=user_data['user_id'],
+            box_size=user_data['box_size'],
+            period=user_data['period'],
+            is_delivery=user_data['is_delivery'],
+        )
+        query.edit_message_text(
+            text=(
+                'Отлично, ваш заказ сформирован.\n'
+            )
+        )
+    if query.data == 'not_accept':
+        query.edit_message_text(
+            text='Нам очень жаль, но для оформления заказа необходимо принять соглашение'
+        )
+    return -1
+
+# Ветка Мои заказы
 
 
 def take_item_back_inline_menu(update, context):
@@ -86,99 +207,3 @@ def take_item_back_inline_menu(update, context):
             text=text,
             reply_markup=m.take_items_back_delivery_keyboard()
         )
-
-
-def box_size_inline_menu(update, context):
-    query = update.callback_query
-    query.answer()
-    if query.data in ['S', 'M', 'L', 'XL']:
-        Box.size = query.data
-        text = f'Вы выбрали бокс *{query.data}-размера*\n' \
-               'Пожалуйста выберите срок хранения.\n' \
-               'Мы рады предложить Вам следующие варианты:'
-        query.edit_message_text(
-            text=text,
-            reply_markup=m.storage_periods_keyboard(),
-            parse_mode='markdown'
-        )
-    elif query.data == 'dont_want_measure':
-        Box.size = 'Будет уточнен'
-        text = 'Хорошо, мы замерим сами когда вы приедете на склад или замерит наш курьер'
-        query.edit_message_text(
-            text=text,
-            reply_markup=m.storage_periods_keyboard()
-        )
-
-
-def month_spelling(num_month):
-    if num_month == 1:
-        return 'месяц'
-    elif num_month in [2, 3, 4]:
-        return 'месяца'
-    else:
-        return 'месяцев'
-
-
-def storage_period_inline_menu(update, context):
-    query = update.callback_query
-    query.answer()
-    if query.data in ['1_month', '3_month', '6_month', '12_month']:
-        Orders.period = int(query.data.split('_')[0])
-        text = f'Отлично, вы хотите поместить коробку размером' \
-               f'\n*{Box.size}* на срок *{Orders.period} {month_spelling(Orders.period)}*.\n' \
-               f'Пожалуйста выберите способ доставки:\n' \
-               f'Курьерская служба *(абсолютно бесплатно)*\n' \
-               f'Привезете сами на наш склад по адресу: {db_handler.get_storage_addresses()}'
-        query.edit_message_text(
-            text=text,
-            reply_markup=m.is_delivery_keyboard(),
-            parse_mode='markdown'
-        )
-        return 1  # DELIVERY
-
-
-def is_delivery_inline_menu(update, context):
-    query = update.callback_query
-    query.answer()
-    is_delivery_value = {
-        'delivery': 1,
-        'self_delivery': 0
-    }
-    if query.data == 'delivery':
-        Orders.is_delivery = is_delivery_value[query.data]
-        text = 'Прекрасно, вы выбрали доставку курьерской службой:\n' \
-               'Нам потребуются ваши контактные данные.\n' \
-               'Но прежде чем продолжить, пожалуйста примите\n' \
-               '*Согласие на обработку персональных данных*'
-        query.edit_message_text(
-            text=text,
-            reply_markup=m.personal_data_agreement_keyboard(),
-            parse_mode='markdown'
-        )
-        return 2
-    if query.data == 'self_delivery':
-        Orders.is_delivery = is_delivery_value[query.data]
-        text = f'Прекрасно, вы привезете вещи сами по адресу {db_handler.get_storage_addresses()}\n' \
-               'Нам потребуются ваши контактные данные.\n' \
-               'Но прежде чем продолжить, пожалуйста примите\n' \
-               '*Согласие на обработку персональных данных*'
-        query.edit_message_text(
-            text=text,
-            reply_markup=m.personal_data_agreement_keyboard(),
-            parse_mode='markdown'
-        )
-        return 2
-
-
-def personal_data_menu(update, context):
-    query = update.callback_query
-    query.answer()
-    if query.data == 'accept':
-        query.edit_message_text(
-            text='Отлично, ваш заказ сформирован'
-        )
-    if query.data == 'not_accept':
-        query.edit_message_text(
-            text='Нам очень жаль'
-        )
-    return -1

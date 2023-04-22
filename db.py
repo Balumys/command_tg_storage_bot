@@ -9,7 +9,6 @@ Base = declarative_base()
 
 class Customer(Base):
     __tablename__ = 'customers'
-
     customer_id = Column(Integer, primary_key=True, unique=True)
     name = Column(String(100), nullable=False)
     email = Column(String(100))
@@ -23,7 +22,6 @@ class Customer(Base):
 
 class Orders(Base):
     __tablename__ = 'orders'
-
     id = Column(Integer, primary_key=True)
     created_at = Column(DateTime, default=datetime.datetime.now())
     expired_at = Column(DateTime)  # This should be calc
@@ -38,35 +36,21 @@ class Orders(Base):
 
     period = Column(Integer)
 
-    def calculate_expired_at(self):
-        periods = {
-            1: datetime.timedelta(days=30),
-            3: datetime.timedelta(days=90),
-            6: datetime.timedelta(days=180),
-            12: datetime.timedelta(days=365)
-        }
-        self.expired_at = self.created_at + periods[self.period]
-
     def __repr__(self):
-        return f"({self.id} {self.customer_id} expired at {self.expired_at})"
+        return f"{self.id} {self.customer_id}"
 
 
 class Storage(Base):
     __tablename__ = 'storage'
-
     id = Column(Integer, primary_key=True)
     address = Column(String(250), nullable=False)
 
-    # area = Column(Float)  # WE DON'T NEED THIS NOW
-    # free_space = Column(Float)  # WE DON'T NEED THIS NOW
-
     def __repr__(self):
-        return f"({self.id} {self.free_space})"
+        return f"{self.id} {self.address}"
 
 
 class Box(Base):
     __tablename__ = 'box'
-
     id = Column(Integer, primary_key=True)
     state = Column(String, nullable=False)
     size = Column(String, nullable=False)
@@ -76,7 +60,7 @@ class Box(Base):
     order = relationship('Orders', back_populates='box')
 
     def __repr__(self):
-        return f"({self.size} {self.id} {self.state})"
+        return f"{self.id} {self.size}"
 
 
 Base.metadata.create_all(bind=engine)

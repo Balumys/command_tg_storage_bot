@@ -55,6 +55,7 @@ def main():
             ],
         },
         fallbacks=[CommandHandler("start", handlers.start)],
+        allow_reentry=True,
     )
 
     updater.dispatcher.add_handler(conversation_handler)

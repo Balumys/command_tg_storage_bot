@@ -1,7 +1,9 @@
-from datetime import datetime
+import datetime
+
 from db import Base, Customer, Orders, Storage, Box
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 
 engine = create_engine('sqlite:///database.db')
 Session = sessionmaker(bind=engine)
@@ -50,5 +52,26 @@ def get_storage_addresses():
     return '\n'.join(addresses)
 
 
-def create_order():
-    pass
+def create_order(customer_id, box_size, period, is_delivery):
+    session = Session()
+    periods = {
+        1: datetime.timedelta(days=30),
+        3: datetime.timedelta(days=90),
+        6: datetime.timedelta(days=180),
+        12: datetime.timedelta(days=365)
+    }
+    created_at = datetime.datetime.now()
+    expired_at = created_at + periods[period]
+    order = Orders(
+        created_at=created_at,
+        expired_at=expired_at,
+        is_delivery=is_delivery,
+        price=500,
+        customer_id=customer_id,
+        box_id=session.query(Box).filter(Box.size == box_size).first().id,
+        period=period,
+    )
+    session.add(order)
+    session.commit()
+    session.close()
+    return order
