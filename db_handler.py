@@ -29,11 +29,11 @@ def get_customer_id(user_id):
 def get_customer_orders(customer_id):
     session = Session()
     orders = session.query(Orders).filter(Orders.customer_id == customer_id).all()
-    boxes = ['У Вас на хранении:']
-    for order in orders:
-        boxes.append(f'Коробка {order.box.size}, срок хранения {order.expired_at}')
+    # boxes = ['У Вас на хранении:']
+    # for order in orders:
+    #     boxes.append(f'Коробка {order.box.size}, срок хранения {order.expired_at}')
     session.close()
-    return '\n'.join(boxes)
+    return orders
 
 
 def add_customer(first_name, user_id):
@@ -48,3 +48,7 @@ def get_storage_addresses():
     session = Session()
     addresses = [row[0] for row in session.query(Storage.address).all()]
     return '\n'.join(addresses)
+
+
+def create_order():
+    pass

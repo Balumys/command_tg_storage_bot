@@ -14,6 +14,14 @@ def start_keyboard():
 """ Раздел Мои заказы """
 
 
+def customer_orders(orders):
+    button_list = [
+        [InlineKeyboardButton(f'№{order.id}', callback_data='order_callback')] for order in orders
+    ]
+    reply_markup = InlineKeyboardMarkup(button_list)
+    return reply_markup
+
+
 def take_items_choice_keyboard():
     button_list = [
         [InlineKeyboardButton("Забрать все вещи", callback_data='take_items_all'),
