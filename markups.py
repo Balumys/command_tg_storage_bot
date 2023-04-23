@@ -43,7 +43,11 @@ def take_items_back_delivery_keyboard():
 
 
 def new_phonenumber_keyboard():
-    button_list = [[InlineKeyboardButton("Ввести новый телефон", callback_data='update_customer_phone')]]
+    button_list = [
+        [
+            InlineKeyboardButton("Ввести новый телефон", callback_data='update_customer_phone'),
+        ]
+    ]
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
 
@@ -53,11 +57,18 @@ def new_phonenumber_keyboard():
 
 def box_size_keyboard():
     button_list = [
-        [InlineKeyboardButton("📦 S-Size (1кв.м)", callback_data='S'),
-         InlineKeyboardButton("📦 M-Size (3кв.м)", callback_data='M')],
-        [InlineKeyboardButton("📦 L-Size (5кв.м)", callback_data='L'),
-         InlineKeyboardButton("📦 >L-Size (более 5кв.м)", callback_data='XL')],
-        [InlineKeyboardButton("❌ Я не хочу замерять сам", callback_data='dont_want_measure')]
+        [
+            InlineKeyboardButton("📦 S-Size (1кв.м)", callback_data='S'),
+            InlineKeyboardButton("📦 M-Size (3кв.м)", callback_data='M')
+        ],
+        [
+            InlineKeyboardButton("📦 L-Size (5кв.м)", callback_data='L'),
+            InlineKeyboardButton("📦 >L-Size (более 5кв.м)", callback_data='XL')
+        ],
+        [
+            InlineKeyboardButton("❌ Я не хочу замерять сам", callback_data='dont_want_measure'),
+            InlineKeyboardButton("❌ Отмена", callback_data='cancel'),
+        ],
     ]
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
@@ -65,10 +76,17 @@ def box_size_keyboard():
 
 def storage_periods_keyboard():
     button_list = [
-        [InlineKeyboardButton("1 месяц", callback_data='1_month'),
-         InlineKeyboardButton("3 месяца", callback_data='3_month')],
-        [InlineKeyboardButton("6 месяцев", callback_data='6_month'),
-         InlineKeyboardButton("12 месяцев", callback_data='12_month')]
+        [
+            InlineKeyboardButton("1 месяц", callback_data='1_month'),
+            InlineKeyboardButton("3 месяца", callback_data='3_month'),
+        ],
+        [
+            InlineKeyboardButton("6 месяцев", callback_data='6_month'),
+            InlineKeyboardButton("12 месяцев", callback_data='12_month')
+        ],
+        [
+            InlineKeyboardButton("❌ Отмена", callback_data='cancel'),
+        ],
     ]
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
@@ -76,8 +94,13 @@ def storage_periods_keyboard():
 
 def is_delivery_keyboard():
     button_list = [
-        [InlineKeyboardButton("🚚 С доставкой (Бесплатно)", callback_data='delivery'),
-         InlineKeyboardButton("Нет, спасибо. Привезу сам", callback_data='self_delivery')],
+        [
+            InlineKeyboardButton("🚚 С доставкой (Бесплатно)", callback_data='delivery'),
+            InlineKeyboardButton("Нет, спасибо. Привезу сам", callback_data='self_delivery')
+        ],
+        [
+            InlineKeyboardButton("❌ Отмена", callback_data='cancel'),
+        ],
     ]
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
@@ -86,7 +109,56 @@ def is_delivery_keyboard():
 def personal_data_agreement_keyboard():
     button_list = [
         [InlineKeyboardButton("✅ Согласен", callback_data='accept'),
-         InlineKeyboardButton("❌ Нет, спасибо, я параноик", callback_data='not_accept')],
+         InlineKeyboardButton("❌ Нет", callback_data='cancel')],
+    ]
+    reply_markup = InlineKeyboardMarkup(button_list)
+    return reply_markup
+
+
+def cancel_keyboard():
+    button_list = [
+        [
+            InlineKeyboardButton("❌ Отмена", callback_data='cancel'),
+        ],
+    ]
+    reply_markup = InlineKeyboardMarkup(button_list)
+    return reply_markup
+
+
+def phone_keyboard():
+    button_list = [
+        [
+            InlineKeyboardButton("✅ Да", callback_data='approve phone'),
+        ],
+        [
+            InlineKeyboardButton("❌ Отмена", callback_data='cancel'),
+        ],
+    ]
+    reply_markup = InlineKeyboardMarkup(button_list)
+    return reply_markup
+
+
+def email_keyboard():
+    button_list = [
+        [
+            InlineKeyboardButton("✅ Да", callback_data='approve email'),
+        ],
+        [
+            InlineKeyboardButton("❌ Отмена", callback_data='cancel'),
+        ],
+    ]
+    reply_markup = InlineKeyboardMarkup(button_list)
+    return reply_markup
+
+
+def verify_order_keyboard():
+    button_list = [
+        [
+            InlineKeyboardButton("✅ Да", callback_data='approve order'),
+        ],
+        [
+            InlineKeyboardButton("❌ Нет", callback_data='cancel'),
+        ],
     ]
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup

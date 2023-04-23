@@ -1,3 +1,4 @@
+import datetime
 import db_handler
 import markups as m
 import sqlalchemy
@@ -7,6 +8,7 @@ import datetime
 from qr_code_handler import create_qr_code
 from db import User
 
+from db import Box
 
 def start(update, context):
     first_name = update.message.from_user.first_name
@@ -18,7 +20,7 @@ def start(update, context):
     hello_message_to_new_user = (
         "Вас приветствует *Garbage Collector* — Склад индивидуального хранения!\n"
         "Вас интересует аренда бокса? С радостью проконсультируем по нашим услугам.\n"
-        "А пока посмотрите примеры и тд...,\n"
+        "А пока посмотрите примеры и т.д. ...\n"
     )
     try:
         db_handler.add_customer(first_name, user_id)
@@ -87,6 +89,7 @@ def user_input(update, context):
 def box_size_inline_menu(update, context):
     query = update.callback_query
     query.answer()
+
     if query.data in ['S', 'M', 'L', 'XL']:
         context.user_data['box_size'] = query.data
         text = f'Вы выбрали бокс *{context.user_data["box_size"]}-размера*\n' \
@@ -97,7 +100,6 @@ def box_size_inline_menu(update, context):
             reply_markup=m.storage_periods_keyboard(),
             parse_mode='markdown'
         )
-        context.user_data['box_size'] = query.data
     elif query.data == 'dont_want_measure':
         context.user_data['box_size'] = 'Будет уточнен'
         text = 'Хорошо, мы замерим сами когда вы приедете на склад или замерит наш курьер'
@@ -174,49 +176,100 @@ def is_delivery_inline_menu(update, context):
 def personal_data_menu(update, context):
     query = update.callback_query
     query.answer()
-    user_data = context.user_data
-    print(user_data)
     if query.data == 'accept':
-        db_handler.create_order(
-            customer_id=user_data['user_id'],
-            box_size=user_data['box_size'],
-            period=user_data['period'],
-            is_delivery=user_data['is_delivery'],
-        )
         query.edit_message_text(
             text=(
                 'Отлично, ваш заказ почти сформирован.\n'
-                'Напишите номер телефона для связи в формате\n*+7-XXX-XXX-XX-XX*\n'
-                '\nЕсли вы не увидели сообщение о вводе электронной почты, значит формат телефона неверный'
-                'поробуйте еще раз'
-            ), parse_mode='markdown'
+                'Напишите номер телефона для связи в формате\n*'
+                '+7-XXX-XXX-XX-XX*\n'
+                '\nЕсли вы не увидели сообщение о вводе электронной почты, '
+                'значит формат телефона неверный поробуйте еще раз'
+            ),
+            reply_markup=m.phone_keyboard(),
+            parse_mode='markdown',
         )
         return 3  # CUSTOMER_PHONE
+
     if query.data == 'not_accept':
         query.edit_message_text(
             text='Нам очень жаль, но для оформления заказа необходимо принять соглашение'
         )
+        return -1
 
 
 def write_customer_phone(update, context):
-    text = update.message.text
-    print(text)
-    db_handler.add_phone_to_customer(context.user_data['user_id'], phone=text)
-    update.message.reply_text(
+    text = (
         'Отлично! Теперь введите email для отправки уведомлений.'
-        'Если вы не увидели сообщение об успешном оформлении заказа,скорее всего вы ввели некоректный'
-        'адрес электронной почты.'
-        '\nПример адреса: *example@mail.ru*',
-        parse_mode='markdown'
+        'Если вы не увидели сообщение об успешном оформлении заказа, '
+        'скорее всего вы ввели некоректный адрес электронной почты.'
+        '\nПример адреса: *example@mail.ru*'
     )
+    if update.callback_query:
+        query = update.callback_query
+        query.answer()
+        query.edit_message_text(
+            text=text,
+            reply_markup=m.email_keyboard(),
+            parse_mode='markdown',
+        )
+    else:
+        db_handler.add_phone_to_customer(
+            context.user_data['user_id'],
+            phone=update.message.text
+        )
+        update.message.reply_text(
+            text=text,
+            parse_mode='markdown',
+        )
     return 4  # CUSTOMER EMAIL
 
 
 def write_customer_email(update, context):
-    text = update.message.text
-    db_handler.add_email_to_customer(context.user_data['user_id'], email=text)
-    update.message.reply_text('Супер! Заказ оформлен.')
+    db_handler.create_order(
+        customer_id=context.user_data['user_id'],
+        box_size=context.user_data['box_size'],
+        period=context.user_data['period'],
+        is_delivery=context.user_data['is_delivery'],
+    )
+    customer_id = context.user_data['user_id']
+    order_data = db_handler.get_last_customer_order(customer_id)
 
+    text = (
+        'Данные заказа:\n'
+        f'Номер заказа №{order_data["order_id"]}\n'
+        f'Размер бокса - {order_data["box_size"]}\n'
+        f'Срок начала хранения - {order_data["created_at"].date()}\n'
+        f'Срок окончания хранения - {order_data["expired_at"].date()}\n'
+    )
+    context.user_data['order_id'] = order_data['order_id']
+    if update.callback_query:
+        query = update.callback_query
+        query.answer()
+        query.edit_message_text(
+            text=text,
+            parse_mode='markdown',
+            reply_markup=m.verify_order_keyboard(),
+        )
+    else:
+        db_handler.add_email_to_customer(
+            context.user_data['user_id'],
+            email=update.message.text
+        )
+        update.message.reply_text(
+            text=text,
+            parse_mode='markdown',
+            reply_markup=m.verify_order_keyboard(),
+        )
+    return 7  # VERIFY_ORDER
+
+
+def verify_order(update, context):
+    query = update.callback_query
+    query.answer()
+    query.edit_message_text(
+        text='Заказ успешно создан.'
+    )
+    return -1
 
 # Ветка Мои заказы
 
@@ -286,7 +339,22 @@ def write_new_customer_phone(update, context):
                               'Хорошего Вам дня!')
 
 
+def cancel(update, context):
+    try:
+        db_handler.delete_order_by_id(context.user_data['order_id'])
+    except Exception:
+        print('Нечего удалять')
+    query = update.callback_query
+    query.answer()
+    query.edit_message_text(
+        'Ну как хотите.',
+        parse_mode='markdown'
+    )
+    return -1
+
+
 # Уведомление о сроке
+
 
 def day_spelling(day):
     if day % 10 == 1 and day % 100 != 11:
@@ -332,4 +400,4 @@ def notify_about_expired(context):
                               f" за очень дорого.\nЕсли после истечения этого срока" \
                               f" вы их не заберете - считайте, что они наши."
                     context.bot.send_message(chat_id=User.chat_id, text=message, parse_mode='markdown')
-                    
+
