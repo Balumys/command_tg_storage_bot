@@ -29,10 +29,10 @@ class Orders(Base):
     is_delivery = Column(Boolean, nullable=False)
 
     customer_id = Column(Integer, ForeignKey(Customer.customer_id, ondelete='CASCADE'))
-    customer = relationship('Customer', back_populates='orders', cascade='all, delete')
+    customer = relationship('Customer', back_populates='orders')
 
     box_id = Column(Integer, ForeignKey('box.id', ondelete='CASCADE'))
-    box = relationship('Box', uselist=False, back_populates='order', cascade='all, delete')
+    box = relationship('Box', uselist=False, back_populates='order')
 
     period = Column(Integer)
 
@@ -57,7 +57,7 @@ class Box(Base):
     price = Column(Float)
     storage_id = Column(Integer, ForeignKey(Storage.id))
 
-    order = relationship('Orders', back_populates='box')
+    order = relationship('Orders', back_populates='box', cascade='all, delete')
 
     def __repr__(self):
         return f"{self.id} {self.size}"
