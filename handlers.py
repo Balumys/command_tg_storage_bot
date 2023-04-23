@@ -74,13 +74,6 @@ def user_input(update, context):
                 parse_mode='Markdown',
                 # кнопки назад?
             )
-    # elif text == 'number':  # походу всё ж сделать регулярку для номера?
-    #     db_handler.add_phone_to_customer(user_id, phone=text)
-    #     update.message.reply_text('Отлично! Теперь введите email для отправки уведомлений')
-    #
-    # elif '@' in text:
-    #     db_handler.add_email_to_customer(user_id, email=text)
-    #     update.message.reply_text('Супер! Заказ оформлен.')
 
 
 # Ветка Оформить заказ
@@ -226,8 +219,14 @@ def write_customer_email(update, context):
 def take_item_back_inline_menu(update, context):
     query = update.callback_query
     query.answer()
-    if query.data == 'take_all_orders':
-        text = 'Вы собираетесь забрать все заказы:\nПожалуйста выберите способ доставки'
+    if query.data == 'take_items_all':
+        text = 'Вы собираетесь забрать все вещи:\nПожалуйста выберите способ доставки'
+        query.edit_message_text(
+            text=text,
+            reply_markup=m.take_items_back_delivery_keyboard()
+        )
+    elif query.data == 'take_items_partial':
+        text = 'Вы собираетесь забрать лишь часть вещей:\nПожалуйста выберите способ доставки'
         query.edit_message_text(
             text=text,
             reply_markup=m.take_items_back_delivery_keyboard()
@@ -237,7 +236,8 @@ def take_item_back_inline_menu(update, context):
         customer_phone = db_handler.get_customer_phone(user_id)
         text = 'Отлично с вами свяжется наш специалист и уточнит информацию по доставке' \
                f'\nПожалуйта проверьте ваш номер телефона: *{customer_phone}*' \
-               f'\nЕсли ваш номер телефона изменился, пожалуйста введите новый.'
+               f'\nЕсли ваш номер телефона изменился, пожалуйста введите новый.' \
+               f'\nЕсли телефон верный, ожидайте звонка. Спасибо'
         query.edit_message_text(
             text=text,
             parse_mode='markdown',
@@ -245,15 +245,15 @@ def take_item_back_inline_menu(update, context):
         )
     elif query.data == 'take_items_back_myself':
         text = 'Отлично мы ждем вас на нашем складе по адресу:' \
-               f'\n*{db_handler.get_storage_address()}*' \
+               f'\n*{db_handler.get_storage_address()}*\n' \
                f'Часы работы: *Пн-Вс* с *09:00-21:00*'
         query.edit_message_text(text=text, parse_mode='markdown')
     else:
         order_id = re.search(r'\d+', query.data).group()
-        text = f'Вы собираетесь забрать заказ *№{order_id}*:\nПожалуйста выберите способ доставки'
+        text = f'Вы собираетесь забрать заказ *№{order_id}*:\nВсе вещи ли частично?'
         query.edit_message_text(
             text=text,
-            reply_markup=m.take_items_back_delivery_keyboard(),
+            reply_markup=m.take_items_choice_keyboard(),
             parse_mode='markdown'
         )
 

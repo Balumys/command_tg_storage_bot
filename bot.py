@@ -74,7 +74,11 @@ def main():
             MY_ORDERS: [
                 CallbackQueryHandler(
                     handlers.take_item_back_inline_menu,
-                    pattern=r'^(take_all_orders|take_order_\d+|take_items_back_delivery|take_items_back_myself)$',
+                    pattern=r'^(take_items_all|'
+                            r'take_items_partial|'
+                            r'take_order_\d+|'
+                            r'take_items_back_delivery|'
+                            r'take_items_back_myself)$',
                 )
             ],
             UPDATE_PHONE: [

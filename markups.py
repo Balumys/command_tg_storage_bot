@@ -20,7 +20,6 @@ def customer_orders_keyboard(orders):
     for order in orders:
         order_id = re.search(r'\d+', order).group()
         button_list.append([InlineKeyboardButton(f'{order}', callback_data=f'take_order_{order_id}')])
-    button_list.append([InlineKeyboardButton('Забрать все', callback_data='take_all_orders')])
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
 
