@@ -112,3 +112,10 @@ def get_customer_phone(customer_id):
     phone = session.query(Customer.phone).filter_by(customer_id=customer_id).scalar()
     session.close()
     return phone
+
+
+def get_expiration_date(customer_id):
+    session = Session()
+    orders = session.query(Orders).filter_by(customer_id=customer_id).all()
+    session.close()
+    return orders

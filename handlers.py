@@ -2,20 +2,24 @@ import db_handler
 import markups as m
 import sqlalchemy
 import re
+import datetime
 
 from qr_code_handler import create_qr_code
-from telegram import ReplyKeyboardRemove, InputMediaPhoto
-from db import Base, Customer, Orders, Storage, Box
+from db import User
 
 
 def start(update, context):
+    first_name = update.message.from_user.first_name
+    user_id = update.message.from_user.id
+
+    User.id = user_id
+    User.chat_id = update.effective_chat.id
+
     hello_message_to_new_user = (
         "Вас приветствует *Garbage Collector* — Склад индивидуального хранения!\n"
         "Вас интересует аренда бокса? С радостью проконсультируем по нашим услугам.\n"
         "А пока посмотрите примеры и тд...,\n"
     )
-    first_name = update.message.from_user.first_name
-    user_id = update.message.from_user.id
     try:
         db_handler.add_customer(first_name, user_id)
     except sqlalchemy.exc.IntegrityError:
@@ -280,3 +284,52 @@ def write_new_customer_phone(update, context):
     db_handler.add_phone_to_customer(context.user_data['user_id'], phone=text)
     update.message.reply_text('Отлично! Ваш номер обновлен. Наш курьер свяжется с вами\n'
                               'Хорошего Вам дня!')
+
+
+# Уведомление о сроке
+
+def day_spelling(day):
+    if day % 10 == 1 and day % 100 != 11:
+        return "день"
+    elif 2 <= day % 10 <= 4 and (day % 100 < 10 or day % 100 >= 20):
+        return "дня"
+    else:
+        return "дней"
+
+
+def notify_about_expiration(context):
+    if type(User.id) == int:
+        orders = db_handler.get_expiration_date(User.id)
+        now = datetime.datetime.now().date()
+        for order in orders:
+            messages = {
+                3: f"Ваш заказ №{order.id} истекает через *3* дня",
+                7: f"Ваш заказ №{order.id} истекает через *7* дней",
+                14: f"Ваш заказ №{order.id} истекает через *14* дней",
+                30: f"Ваш заказ №{order.id} истекает через *30* дней"
+            }
+            time_left = order.expired_at.date() - now
+            days_left = time_left
+            days_left = days_left.days
+            if days_left in messages:
+                message = messages[days_left]
+                context.bot.send_message(chat_id=User.chat_id, text=message, parse_mode='markdown')
+
+
+def notify_about_expired(context):
+    loyal_period = 180  # How many days we keep the box
+    if type(User.id) == int:
+        orders = db_handler.get_expiration_date(User.id)
+        now = datetime.datetime.now()
+        for order in orders:
+            time_left = order.expired_at - now
+            days_left = time_left.days
+            if days_left < 0:
+                days_left = time_left.days + loyal_period
+                if days_left > 0:
+                    message = f"Срок хранения вашего заказа *№{order.id}* истек." \
+                              f"\nМы будем хранить ваши вещи еще *{days_left} {day_spelling(days_left)}*," \
+                              f" за очень дорого.\nЕсли после истечения этого срока" \
+                              f" вы их не заберете - считайте, что они наши."
+                    context.bot.send_message(chat_id=User.chat_id, text=message, parse_mode='markdown')
+                    

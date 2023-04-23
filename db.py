@@ -64,3 +64,13 @@ class Box(Base):
 
 
 Base.metadata.create_all(bind=engine)
+
+
+class User(Base):
+    __tablename__ = 'user'
+
+    id = Column(Integer, primary_key=True)
+    chat_id = Column(Integer)
+
+    def __repr__(self):
+        return f"{self.id}"
