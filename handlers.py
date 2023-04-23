@@ -3,7 +3,8 @@ import markups as m
 import sqlalchemy
 import re
 
-from telegram import ReplyKeyboardRemove
+from qr_code_handler import create_qr_code
+from telegram import ReplyKeyboardRemove, InputMediaPhoto
 from db import Base, Customer, Orders, Storage, Box
 
 
@@ -243,12 +244,20 @@ def take_item_back_inline_menu(update, context):
             reply_markup=m.new_phonenumber_keyboard()
         )
     elif query.data == 'take_items_back_myself':
+        order_to_take = context.user_data["order_take"]
         text = 'Отлично мы ждем вас на нашем складе по адресу:' \
                f'\n*{db_handler.get_storage_address()}*\n' \
-               f'Часы работы: *Пн-Вс* с *09:00-21:00*'
-        query.edit_message_text(text=text, parse_mode='markdown')
+               f'Часы работы: *Пн-Вс* с *09:00-21:00*' \
+               f'Этот QR-code откроет ваш бокс'
+
+        qr_code_buffer = create_qr_code(f'Откроет бокс с заказом №{order_to_take}')
+        context.bot.send_photo(chat_id=update.effective_chat.id,
+                               photo=qr_code_buffer,
+                               caption=text,
+                               parse_mode='markdown')
     else:
         order_id = re.search(r'\d+', query.data).group()
+        context.user_data['order_take'] = order_id
         text = f'Вы собираетесь забрать заказ *№{order_id}*:\nВсе вещи ли частично?'
         query.edit_message_text(
             text=text,
