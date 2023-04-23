@@ -1,4 +1,3 @@
-# import handlers
 import handlers
 
 from telegram.ext import (
@@ -18,7 +17,7 @@ def main():
     env = Env()
     env.read_env()
 
-    ORDERS, DELIVERY, PERSONAL_DATA = range(3)
+    ORDERS, DELIVERY, PERSONAL_DATA, PHONE = range(4)
     token = env('TG_CUSTOMER_BOT_TOKEN')
 
     updater = Updater(token)
@@ -26,7 +25,7 @@ def main():
     conversation_handler = ConversationHandler(
         entry_points=[
             CommandHandler("start", handlers.start),
-            MessageHandler(Filters.text, handlers.button)
+            MessageHandler(Filters.text, handlers.user_input),
         ],
         states={
             ORDERS: [
