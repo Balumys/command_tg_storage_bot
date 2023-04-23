@@ -92,7 +92,6 @@ def box_size_inline_menu(update, context):
             reply_markup=m.storage_periods_keyboard(),
             parse_mode='markdown'
         )
-        context.user_data['box_size'] = query.data
     elif query.data == 'dont_want_measure':
         context.user_data['box_size'] = 'Будет уточнен'
         text = 'Хорошо, мы замерим сами когда вы приедете на склад или замерит наш курьер'
@@ -184,7 +183,8 @@ def personal_data_menu(update, context):
                 'Напишите номер телефона для связи в формате\n*+7-XXX-XXX-XX-XX*\n'
                 '\nЕсли вы не увидели сообщение о вводе электронной почты, значит формат телефона неверный'
                 'поробуйте еще раз'
-            ), parse_mode='markdown'
+            ),
+            parse_mode='markdown',
         )
         return 3  # CUSTOMER_PHONE
     if query.data == 'not_accept':
@@ -195,12 +195,11 @@ def personal_data_menu(update, context):
 
 def write_customer_phone(update, context):
     text = update.message.text
-    print(text)
     db_handler.add_phone_to_customer(context.user_data['user_id'], phone=text)
     update.message.reply_text(
         'Отлично! Теперь введите email для отправки уведомлений.'
-        'Если вы не увидели сообщение об успешном оформлении заказа,скорее всего вы ввели некоректный'
-        'адрес электронной почты.'
+        'Если вы не увидели сообщение об успешном оформлении заказа, '
+        'скорее всего вы ввели некоректный адрес электронной почты.'
         '\nПример адреса: *example@mail.ru*',
         parse_mode='markdown'
     )
