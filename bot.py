@@ -1,5 +1,9 @@
+import datetime
+
 import handlers
 
+from datetime import datetime
+from datetime import timedelta
 from telegram.ext import (
     Filters,
     MessageHandler,
@@ -108,6 +112,13 @@ def main():
     )
 
     updater.dispatcher.add_handler(conversation_handler)
+    job_queue = updater.job_queue
+
+    once_a_day = timedelta(days=1).total_seconds()
+    once_a_month = timedelta(days=30).total_seconds()
+
+    job_queue.run_repeating(handlers.notify_about_expiration, interval=10)
+    job_queue.run_repeating(handlers.notify_about_expired, interval=10)
     updater.start_polling()
     updater.idle()
 

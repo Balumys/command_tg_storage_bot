@@ -125,3 +125,10 @@ def delete_order_by_id(order_id):
     session.delete(order)
     session.commit()
     session.close()
+
+
+def get_expiration_date(customer_id):
+    session = Session()
+    orders = session.query(Orders).filter_by(customer_id=customer_id).all()
+    session.close()
+    return orders
