@@ -1,3 +1,4 @@
+import re
 from telegram import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardButton, InlineKeyboardMarkup
 
 
@@ -14,10 +15,12 @@ def start_keyboard():
 """ Раздел Мои заказы """
 
 
-def customer_orders(orders):
-    button_list = [
-        [InlineKeyboardButton(f'№{order.id}', callback_data='order_callback')] for order in orders
-    ]
+def customer_orders_keyboard(orders):
+    button_list = []
+    for order in orders:
+        order_id = re.search(r'\d+', order).group()
+        button_list.append([InlineKeyboardButton(f'{order}', callback_data=f'take_order_{order_id}')])
+    button_list.append([InlineKeyboardButton('Забрать все', callback_data='take_all_orders')])
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
 
@@ -36,6 +39,12 @@ def take_items_back_delivery_keyboard():
         [InlineKeyboardButton("Доставка (платная)", callback_data='take_items_back_delivery'),
          InlineKeyboardButton("Самовывоз", callback_data='take_items_back_myself')]
     ]
+    reply_markup = InlineKeyboardMarkup(button_list)
+    return reply_markup
+
+
+def new_phonenumber_keyboard():
+    button_list = [[InlineKeyboardButton("Ввести новый телефон", callback_data='update_customer_phone')]]
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
 
@@ -82,4 +91,3 @@ def personal_data_agreement_keyboard():
     ]
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
-

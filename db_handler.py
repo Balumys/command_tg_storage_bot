@@ -4,7 +4,6 @@ from db import Base, Customer, Orders, Storage, Box
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-
 engine = create_engine('sqlite:///database.db')
 Session = sessionmaker(bind=engine)
 
@@ -31,8 +30,14 @@ def get_customer_id(user_id):
 def get_customer_orders(customer_id):
     session = Session()
     orders = session.query(Orders).filter(Orders.customer_id == customer_id).all()
+    order_list = []
+    for order in orders:
+        order_list.append(
+            f'Заказ №{order.id} коробка {order.box.size},'
+            f' срок хранения до {datetime.datetime.date(order.expired_at)}'
+        )
     session.close()
-    return orders
+    return order_list
 
 
 def add_customer(first_name, user_id):
@@ -73,6 +78,7 @@ def add_address_to_customer(customer_id, address):
 def get_storage_address():
     session = Session()
     addresses = [row[0] for row in session.query(Storage.address).all()]
+    session.close()
     return '\n'.join(addresses)
 
 
@@ -99,3 +105,10 @@ def create_order(customer_id, box_size, period, is_delivery):
     session.commit()
     session.close()
     return order
+
+
+def get_customer_phone(customer_id):
+    session = Session()
+    phone = session.query(Customer.phone).filter_by(customer_id=customer_id).scalar()
+    session.close()
+    return phone

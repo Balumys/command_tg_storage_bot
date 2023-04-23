@@ -1,6 +1,7 @@
 import db_handler
 import markups as m
 import sqlalchemy
+import re
 
 from telegram import ReplyKeyboardRemove
 from db import Base, Customer, Orders, Storage, Box
@@ -61,24 +62,25 @@ def user_input(update, context):
             update.message.reply_text(
                 'Выберите номер заказа:',
                 parse_mode='Markdown',
-                reply_markup=m.customer_orders(orders)
+                reply_markup=m.customer_orders_keyboard(orders)
             )
+            return 5  # MY_ORDERS
         else:
             update.message.reply_text(
                 text=(
-                    'Простите, но кажется у вас еще нет барахла на хранении 😞\n' \
+                    'Простите, но кажется у вас еще нет барахла на хранении 😞\n'
                     'Пожалуйста оформите заказ.'
                 ),
                 parse_mode='Markdown',
                 # кнопки назад?
             )
-    elif text == 'number':  # походу всё ж сделать регулярку для номера?
-        db_handler.add_phone_to_customer(user_id, phone=text)
-        update.message.reply_text('Отлично! Теперь введите email для отправки уведомлений')
-
-    elif '@' in text:
-        db_handler.add_email_to_customer(user_id, email=text)
-        update.message.reply_text('Супер! Заказ оформлен.')
+    # elif text == 'number':  # походу всё ж сделать регулярку для номера?
+    #     db_handler.add_phone_to_customer(user_id, phone=text)
+    #     update.message.reply_text('Отлично! Теперь введите email для отправки уведомлений')
+    #
+    # elif '@' in text:
+    #     db_handler.add_email_to_customer(user_id, email=text)
+    #     update.message.reply_text('Супер! Заказ оформлен.')
 
 
 # Ветка Оформить заказ
@@ -146,7 +148,6 @@ def is_delivery_inline_menu(update, context):
         'self_delivery': 0
     }
     if query.data == 'delivery':
-
         # Orders.is_delivery = is_delivery_value[query.data]
         text = 'Прекрасно, вы выбрали доставку курьерской службой:\n' \
                'Нам потребуются ваши контактные данные.\n' \
@@ -159,7 +160,7 @@ def is_delivery_inline_menu(update, context):
         )
     if query.data == 'self_delivery':
         # Orders.is_delivery = is_delivery_value[query.data]
-        text = f'Прекрасно, вы привезете вещи сами по адресу {db_handler.get_storage_address()}\n' \
+        text = f'Прекрасно, вы привезете вещи сами по адресу:\n*{db_handler.get_storage_address()}*\n' \
                'Нам потребуются ваши контактные данные.\n' \
                'Но прежде чем продолжить, пожалуйста примите\n' \
                '*Согласие на обработку персональных данных*'
@@ -187,13 +188,36 @@ def personal_data_menu(update, context):
         query.edit_message_text(
             text=(
                 'Отлично, ваш заказ почти сформирован.\n'
-                'Напишите номер телефона для связи'
-            )
+                'Напишите номер телефона для связи в формате\n*+7-XXX-XXX-XX-XX*\n'
+                '\nЕсли вы не увидели сообщение о вводе электронной почты, значит формат телефона неверный'
+                'поробуйте еще раз'
+            ), parse_mode='markdown'
         )
+        return 3  # CUSTOMER_PHONE
     if query.data == 'not_accept':
         query.edit_message_text(
             text='Нам очень жаль, но для оформления заказа необходимо принять соглашение'
         )
+
+
+def write_customer_phone(update, context):
+    text = update.message.text
+    print(text)
+    db_handler.add_phone_to_customer(context.user_data['user_id'], phone=text)
+    update.message.reply_text(
+        'Отлично! Теперь введите email для отправки уведомлений.'
+        'Если вы не увидели сообщение об успешном оформлении заказа,скорее всего вы ввели некоректный'
+        'адрес электронной почты.'
+        '\nПример адреса: *example@mail.ru*',
+        parse_mode='markdown'
+    )
+    return 4  # CUSTOMER EMAIL
+
+
+def write_customer_email(update, context):
+    text = update.message.text
+    db_handler.add_email_to_customer(context.user_data['user_id'], email=text)
+    update.message.reply_text('Супер! Заказ оформлен.')
 
 
 # Ветка Мои заказы
@@ -202,15 +226,48 @@ def personal_data_menu(update, context):
 def take_item_back_inline_menu(update, context):
     query = update.callback_query
     query.answer()
-    if query.data == 'take_items_all':
-        text = 'Вы собираетесь забрать все вещи:\nВыберите способ доставки'
+    if query.data == 'take_all_orders':
+        text = 'Вы собираетесь забрать все заказы:\nПожалуйста выберите способ доставки'
         query.edit_message_text(
             text=text,
             reply_markup=m.take_items_back_delivery_keyboard()
         )
-    if query.data == 'take_items_partial':
-        text = 'Вы собираетесь забрать часть вещей:\nВыберите способ доставки'
+    elif query.data == 'take_items_back_delivery':
+        user_id = context.user_data['user_id']
+        customer_phone = db_handler.get_customer_phone(user_id)
+        text = 'Отлично с вами свяжется наш специалист и уточнит информацию по доставке' \
+               f'\nПожалуйта проверьте ваш номер телефона: *{customer_phone}*' \
+               f'\nЕсли ваш номер телефона изменился, пожалуйста введите новый.'
         query.edit_message_text(
             text=text,
-            reply_markup=m.take_items_back_delivery_keyboard()
+            parse_mode='markdown',
+            reply_markup=m.new_phonenumber_keyboard()
         )
+    elif query.data == 'take_items_back_myself':
+        text = 'Отлично мы ждем вас на нашем складе по адресу:' \
+               f'\n*{db_handler.get_storage_address()}*' \
+               f'Часы работы: *Пн-Вс* с *09:00-21:00*'
+        query.edit_message_text(text=text, parse_mode='markdown')
+    else:
+        order_id = re.search(r'\d+', query.data).group()
+        text = f'Вы собираетесь забрать заказ *№{order_id}*:\nПожалуйста выберите способ доставки'
+        query.edit_message_text(
+            text=text,
+            reply_markup=m.take_items_back_delivery_keyboard(),
+            parse_mode='markdown'
+        )
+
+
+def promt_update_customer_phone(update, context):
+    text = "Введите номер телефона в формате *+7-XXX-XXX-XX-XX*\n" \
+           "Если вы не увидите сообщение подтверждающее обновление телефона," \
+           " попробуйте еще раз ввести в правильном формате"
+    context.bot.send_message(chat_id=update.effective_chat.id, text=text, parse_mode='markdown')
+    return 6
+
+
+def write_new_customer_phone(update, context):
+    text = update.message.text
+    db_handler.add_phone_to_customer(context.user_data['user_id'], phone=text)
+    update.message.reply_text('Отлично! Ваш номер обновлен. Наш курьер свяжется с вами\n'
+                              'Хорошего Вам дня!')

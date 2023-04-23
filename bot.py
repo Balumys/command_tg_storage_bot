@@ -17,7 +17,7 @@ def main():
     env = Env()
     env.read_env()
 
-    ORDERS, DELIVERY, PERSONAL_DATA, PHONE = range(4)
+    ORDERS, DELIVERY, PERSONAL_DATA, CUSTOMER_PHONE, CUSTOMER_EMAIL, MY_ORDERS, UPDATE_PHONE = range(7)
     token = env('TG_CUSTOMER_BOT_TOKEN')
 
     updater = Updater(token)
@@ -25,7 +25,14 @@ def main():
     conversation_handler = ConversationHandler(
         entry_points=[
             CommandHandler("start", handlers.start),
-            MessageHandler(Filters.text, handlers.user_input),
+            MessageHandler(
+                Filters.regex(r'🎿 Оформить заказ|📕 Правила хранения|📦 Мои заказы'),
+                handlers.user_input
+            ),
+            CallbackQueryHandler(
+                handlers.promt_update_customer_phone,
+                pattern='^update_customer_phone$'
+            ),
         ],
         states={
             ORDERS: [
@@ -52,6 +59,30 @@ def main():
                     pattern='^(accept|not_accept)$',
                 ),
             ],
+            CUSTOMER_PHONE: [
+                MessageHandler(
+                    Filters.regex(r'^\+7-\d{3}-\d{3}-\d{2}-\d{2}$'),
+                    handlers.write_customer_phone
+                ),
+            ],
+            CUSTOMER_EMAIL: [
+                MessageHandler(
+                    Filters.regex(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'),
+                    handlers.write_customer_email
+                ),
+            ],
+            MY_ORDERS: [
+                CallbackQueryHandler(
+                    handlers.take_item_back_inline_menu,
+                    pattern=r'^(take_all_orders|take_order_\d+|take_items_back_delivery|take_items_back_myself)$',
+                )
+            ],
+            UPDATE_PHONE: [
+                MessageHandler(
+                    Filters.regex(r'^\+7-\d{3}-\d{3}-\d{2}-\d{2}$'),
+                    handlers.write_new_customer_phone
+                ),
+            ]
         },
         fallbacks=[CommandHandler("start", handlers.start)],
         allow_reentry=True,
