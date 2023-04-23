@@ -17,16 +17,6 @@ def get_customer_id(user_id):
     return tg_id[0] if tg_id is not None else None
 
 
-# def get_stored_boxes(customer_id):
-#     session = Session()
-#     boxes = session.query(Box).join(Orders).filter(Orders.customer_id == customer_id).all()
-#     boxes_list = ['У Вас на хранении:']
-#     for box in boxes:
-#         boxes_list.append(f'Коробка *{box.size}* срок хранения до *{datetime.date(box.orders[0].expired_at)}*')
-#     session.close()
-#     return '\n'.join(boxes_list)
-
-
 def get_customer_orders(customer_id):
     session = Session()
     orders = session.query(Orders).filter(Orders.customer_id == customer_id).all()
@@ -90,25 +80,48 @@ def create_order(customer_id, box_size, period, is_delivery):
         6: datetime.timedelta(days=180),
         12: datetime.timedelta(days=365)
     }
-    created_at = datetime.datetime.now()
+    created_at = datetime.datetime.now().date()
     expired_at = created_at + periods[period]
+    box_id = session.query(Box).filter(Box.size == box_size).first().id
+
     order = Orders(
         created_at=created_at,
         expired_at=expired_at,
         is_delivery=is_delivery,
         price=500,
         customer_id=customer_id,
-        box_id=session.query(Box).filter(Box.size == box_size).first().id,
+        box_id=box_id,
         period=period,
     )
     session.add(order)
     session.commit()
     session.close()
-    return order
 
 
 def get_customer_phone(customer_id):
     session = Session()
-    phone = session.query(Customer.phone).filter_by(customer_id=customer_id).scalar()
+    phone = session.query(Customer.phone).filter(Customer.customer_id == customer_id).scalar()
     session.close()
     return phone
+
+
+def get_last_customer_order(customer_id):
+    session = Session()
+    order = session.query(Orders).filter(Orders.customer_id == customer_id).all()[-1]
+    context = {
+        'order_id': order.id,
+        'created_at': order.created_at,
+        'expired_at': order.expired_at,
+        'box_size': order.box.size,
+        'is_delivery': order.is_delivery,
+    }
+    session.close()
+    return context
+
+
+def delete_order_by_id(order_id):
+    session = Session()
+    order = session.query(Orders).filter(Orders.id == order_id).one()
+    session.delete(order)
+    session.commit()
+    session.close()

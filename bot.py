@@ -17,7 +17,7 @@ def main():
     env = Env()
     env.read_env()
 
-    ORDERS, DELIVERY, PERSONAL_DATA, CUSTOMER_PHONE, CUSTOMER_EMAIL, MY_ORDERS, UPDATE_PHONE = range(7)
+    ORDERS, DELIVERY, PERSONAL_DATA, CUSTOMER_PHONE, CUSTOMER_EMAIL, MY_ORDERS, UPDATE_PHONE, VERIFY_ORDER = range(8)
     token = env('TG_CUSTOMER_BOT_TOKEN')
 
     updater = Updater(token)
@@ -44,8 +44,6 @@ def main():
                     handlers.storage_period_inline_menu,
                     pattern='^(1_month|3_month|6_month|12_month)$'
                 ),
-                # RegexHandler('^(S|M|L|XL)$', handlers.box_size_inline_menu),
-                # CallbackQueryHandler(two, pattern="^" + str(TWO) + "$"),
             ],
             DELIVERY: [
                 CallbackQueryHandler(
@@ -60,15 +58,23 @@ def main():
                 ),
             ],
             CUSTOMER_PHONE: [
+                CallbackQueryHandler(
+                    handlers.write_customer_phone,
+                    pattern='approve phone',
+                ),
                 MessageHandler(
                     Filters.regex(r'^\+7-\d{3}-\d{3}-\d{2}-\d{2}$'),
-                    handlers.write_customer_phone
+                    handlers.write_customer_phone,
                 ),
             ],
             CUSTOMER_EMAIL: [
+                CallbackQueryHandler(
+                    handlers.write_customer_email,
+                    pattern='approve email',
+                ),
                 MessageHandler(
                     Filters.regex(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'),
-                    handlers.write_customer_email
+                    handlers.write_customer_email,
                 ),
             ],
             MY_ORDERS: [
@@ -84,11 +90,20 @@ def main():
             UPDATE_PHONE: [
                 MessageHandler(
                     Filters.regex(r'^\+7-\d{3}-\d{3}-\d{2}-\d{2}$'),
-                    handlers.write_new_customer_phone
+                    handlers.write_new_customer_phone,
+                ),
+            ],
+            VERIFY_ORDER: [
+                CallbackQueryHandler(
+                    handlers.verify_order,
+                    pattern='approve order',
                 ),
             ]
         },
-        fallbacks=[CommandHandler("start", handlers.start)],
+        fallbacks=[
+            CommandHandler('start', handlers.start),
+            CallbackQueryHandler(handlers.cancel, "cancel"),
+        ],
         allow_reentry=True,
     )
 
