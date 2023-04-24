@@ -145,6 +145,63 @@ def is_delivery_inline_menu(update, context):
         'delivery': 1,
         'self_delivery': 0
     }
+    is_customer_exist = db_handler.is_customer_exist(context.user_data['user_id'])
+    if query.data == 'delivery' and is_customer_exist:
+        context.user_data['is_delivery'] = is_delivery[query.data]
+        db_handler.create_order(
+            customer_id=context.user_data['user_id'],
+            box_size=context.user_data['box_size'],
+            period=context.user_data['period'],
+            is_delivery=context.user_data['is_delivery'],
+        )
+
+        customer_id = context.user_data['user_id']
+        order_data = db_handler.get_last_customer_order(customer_id)
+
+        text = 'Вы уже есть в системе проверьте ваш заказ и наш курьер с вами свяжется:\n' \
+               f'Ваш телефон - *{is_customer_exist.phone}*\n' \
+               f'Ваша почта - *{is_customer_exist.email}*\n' \
+               f'Данные заказа:\n' \
+               f'Номер заказа - *№{order_data["order_id"]}*\n' \
+               f'Размер бокса - *{order_data["box_size"]}*\n' \
+               f'Срок начала хранения - *{order_data["created_at"].date()}*\n' \
+               f'Срок окончания хранения - *{order_data["expired_at"].date()}*\n' \
+               f'Общая стоимость заказа - *{order_data["price"]}*'
+
+        query.edit_message_text(
+            text=text,
+            reply_markup=m.verify_order_keyboard(),
+            parse_mode='markdown'
+        )
+        return 7
+    if query.data == 'self_delivery' and is_customer_exist:
+        context.user_data['is_delivery'] = is_delivery[query.data]
+        db_handler.create_order(
+            customer_id=context.user_data['user_id'],
+            box_size=context.user_data['box_size'],
+            period=context.user_data['period'],
+            is_delivery=context.user_data['is_delivery'],
+        )
+
+        customer_id = context.user_data['user_id']
+        order_data = db_handler.get_last_customer_order(customer_id)
+
+        text = 'Вы уже есть в системе проверьте ваш заказ\n' \
+               f'Ваш телефон - *{is_customer_exist.phone}*\n' \
+               f'Ваша почта - *{is_customer_exist.email}*\n' \
+               f'Данные заказа:\n' \
+               f'Номер заказа - *№{order_data["order_id"]}*\n' \
+               f'Размер бокса - *{order_data["box_size"]}*\n' \
+               f'Срок начала хранения - *{order_data["created_at"].date()}*\n' \
+               f'Срок окончания хранения - *{order_data["expired_at"].date()}*\n' \
+               f'Общая стоимость заказа - *{order_data["price"]}*'
+
+        query.edit_message_text(
+            text=text,
+            reply_markup=m.verify_order_keyboard(),
+            parse_mode='markdown'
+        )
+        return 7
     if query.data == 'delivery':
         # Orders.is_delivery = is_delivery_value[query.data]
         text = 'Прекрасно, вы выбрали доставку курьерской службой:\n' \
@@ -276,7 +333,7 @@ def verify_order(update, context):
         return -1
     else:
         text = 'Отлично ваш заказ сформирован, в блажайшее время с вами свяжется наш курьер ' \
-               'и уточнит детали доставки.:'
+               'и уточнит детали доставки.'
         query.edit_message_text(
             text=text,
             parse_mode='markdown'

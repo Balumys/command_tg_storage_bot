@@ -134,9 +134,9 @@ def cancel_keyboard():
 
 def phone_keyboard():
     button_list = [
-        [
-            InlineKeyboardButton("✅ Да", callback_data='approve phone'),
-        ],
+        # [
+        #     InlineKeyboardButton("✅ Да", callback_data='approve phone'),
+        # ],
         [
             InlineKeyboardButton("❌ Отмена", callback_data='cancel'),
         ],
@@ -169,3 +169,5 @@ def verify_order_keyboard():
     ]
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
+
+

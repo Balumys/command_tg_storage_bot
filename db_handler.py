@@ -144,3 +144,12 @@ def get_expiration_date(customer_id):
     orders = session.query(Orders).filter_by(customer_id=customer_id).all()
     session.close()
     return orders
+
+
+def is_customer_exist(customer_id):
+    session = Session()
+    customer = session.query(Customer).filter_by(customer_id=customer_id).first()
+    if customer.phone:
+        return customer
+    else:
+        return False

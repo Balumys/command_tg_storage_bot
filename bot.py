@@ -117,8 +117,8 @@ def main():
     once_a_day = timedelta(days=1).total_seconds()
     once_a_month = timedelta(days=30).total_seconds()
 
-    job_queue.run_repeating(handlers.notify_about_expiration, interval=10)
-    job_queue.run_repeating(handlers.notify_about_expired, interval=10)
+    job_queue.run_repeating(handlers.notify_about_expiration, interval=once_a_day)
+    job_queue.run_repeating(handlers.notify_about_expired, interval=once_a_month)
     updater.start_polling()
     updater.idle()
 
