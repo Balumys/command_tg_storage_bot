@@ -80,15 +80,26 @@ def create_order(customer_id, box_size, period, is_delivery):
         6: datetime.timedelta(days=180),
         12: datetime.timedelta(days=365)
     }
+    price_per_month = {
+        'S': 1000,
+        'M': 2000,
+        'L': 3000,
+        'XL': 4000
+    }
     created_at = datetime.datetime.now().date()
     expired_at = created_at + periods[period]
+    if box_size != 'Unknown':
+        price = price_per_month[box_size] * period
+    else:
+        price = 0
+
     box_id = session.query(Box).filter(Box.size == box_size).first().id
 
     order = Orders(
         created_at=created_at,
         expired_at=expired_at,
         is_delivery=is_delivery,
-        price=500,
+        price=price,
         customer_id=customer_id,
         box_id=box_id,
         period=period,
@@ -112,7 +123,8 @@ def get_last_customer_order(customer_id):
         'order_id': order.id,
         'created_at': order.created_at,
         'expired_at': order.expired_at,
-        'box_size': order.box.size,
+        'box_size': order.box.size if order.box.size != 'Unknown' else 'Будет уточнен',
+        'price': order.price if order.box.size != 'Unknown' else 'Будет уточнен',
         'is_delivery': order.is_delivery,
     }
     session.close()

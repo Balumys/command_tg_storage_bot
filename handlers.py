@@ -1,4 +1,3 @@
-import datetime
 import db_handler
 import markups as m
 import sqlalchemy
@@ -8,7 +7,6 @@ import datetime
 from qr_code_handler import create_qr_code
 from db import User
 
-from db import Box
 
 def start(update, context):
     first_name = update.message.from_user.first_name
@@ -236,10 +234,11 @@ def write_customer_email(update, context):
 
     text = (
         'Данные заказа:\n'
-        f'Номер заказа №{order_data["order_id"]}\n'
-        f'Размер бокса - {order_data["box_size"]}\n'
-        f'Срок начала хранения - {order_data["created_at"].date()}\n'
-        f'Срок окончания хранения - {order_data["expired_at"].date()}\n'
+        f'Номер заказа *№{order_data["order_id"]}*\n'
+        f'Размер бокса - *{order_data["box_size"]}*\n'
+        f'Срок начала хранения - *{order_data["created_at"].date()}*\n'
+        f'Срок окончания хранения - *{order_data["expired_at"].date()}*\n'
+        f'Общая стоимость заказа - *{order_data["price"]}*'
     )
     context.user_data['order_id'] = order_data['order_id']
     if update.callback_query:
