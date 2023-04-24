@@ -23,8 +23,8 @@ def get_customer_orders(customer_id):
     order_list = []
     for order in orders:
         order_list.append(
-            f'Заказ №{order.id} коробка {order.box.size},'
-            f' срок хранения до {datetime.datetime.date(order.expired_at)}'
+            f'№{order.id} бокс {order.box.size}, '
+            f'до {datetime.datetime.date(order.expired_at)}'
         )
     session.close()
     return order_list

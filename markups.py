@@ -19,15 +19,22 @@ def customer_orders_keyboard(orders):
     button_list = []
     for order in orders:
         order_id = re.search(r'\d+', order).group()
-        button_list.append([InlineKeyboardButton(f'{order}', callback_data=f'take_order_{order_id}')])
+        button_list.append(
+            [
+                InlineKeyboardButton(
+                    f'{order}',
+                    callback_data=f'take_order_{order_id}',
+                )
+            ]
+        )
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
 
 
 def take_items_choice_keyboard():
     button_list = [
-        [InlineKeyboardButton("Забрать все вещи", callback_data='take_items_all'),
-         InlineKeyboardButton("Забрать часть вещей", callback_data='take_items_partial')]
+        [InlineKeyboardButton("Забрать всё", callback_data='take_items_all'),
+         InlineKeyboardButton("Забрать часть", callback_data='take_items_partial')]
     ]
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
@@ -35,8 +42,8 @@ def take_items_choice_keyboard():
 
 def take_items_back_delivery_keyboard():
     button_list = [
-        [InlineKeyboardButton("Доставка (платная)", callback_data='take_items_back_delivery'),
-         InlineKeyboardButton("Самовывоз", callback_data='take_items_back_myself')]
+        [InlineKeyboardButton("🚚 Доставка", callback_data='take_items_back_delivery'),
+         InlineKeyboardButton("👨🏻 Самовывоз", callback_data='take_items_back_myself')]
     ]
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
@@ -45,7 +52,7 @@ def take_items_back_delivery_keyboard():
 def new_phonenumber_keyboard():
     button_list = [
         [
-            InlineKeyboardButton("Ввести новый телефон", callback_data='update_customer_phone'),
+            InlineKeyboardButton("Ввести новый 📞", callback_data='update_customer_phone'),
         ]
     ]
     reply_markup = InlineKeyboardMarkup(button_list)
@@ -58,12 +65,12 @@ def new_phonenumber_keyboard():
 def box_size_keyboard():
     button_list = [
         [
-            InlineKeyboardButton("📦 S-Size (1кв.м)", callback_data='S'),
-            InlineKeyboardButton("📦 M-Size (3кв.м)", callback_data='M')
+            InlineKeyboardButton("📦 S (1кв.м)", callback_data='S'),
+            InlineKeyboardButton("📦 M (3кв.м)", callback_data='M')
         ],
         [
-            InlineKeyboardButton("📦 L-Size (5кв.м)", callback_data='L'),
-            InlineKeyboardButton("📦 >L-Size (более 5кв.м)", callback_data='XL')
+            InlineKeyboardButton("📦 L (5кв.м)", callback_data='L'),
+            InlineKeyboardButton("📦 >L (>5кв.м)", callback_data='XL')
         ],
         [
             InlineKeyboardButton("❌ Я не хочу замерять сам", callback_data='dont_want_measure'),
@@ -95,8 +102,8 @@ def storage_periods_keyboard():
 def is_delivery_keyboard():
     button_list = [
         [
-            InlineKeyboardButton("🚚 С доставкой (Бесплатно)", callback_data='delivery'),
-            InlineKeyboardButton("Нет, спасибо. Привезу сам", callback_data='self_delivery')
+            InlineKeyboardButton("🚚 С доставкой", callback_data='delivery'),
+            InlineKeyboardButton("👨🏻 Привезу сам", callback_data='self_delivery')
         ],
         [
             InlineKeyboardButton("❌ Отмена", callback_data='cancel'),
