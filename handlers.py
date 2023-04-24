@@ -153,6 +153,7 @@ def is_delivery_inline_menu(update, context):
             box_size=context.user_data['box_size'],
             period=context.user_data['period'],
             is_delivery=context.user_data['is_delivery'],
+            status_id=1  # Оформлен
         )
 
         customer_id = context.user_data['user_id']
@@ -181,6 +182,7 @@ def is_delivery_inline_menu(update, context):
             box_size=context.user_data['box_size'],
             period=context.user_data['period'],
             is_delivery=context.user_data['is_delivery'],
+            status_id=1  # Оформлен
         )
 
         customer_id = context.user_data['user_id']
@@ -285,6 +287,7 @@ def write_customer_email(update, context):
         box_size=context.user_data['box_size'],
         period=context.user_data['period'],
         is_delivery=context.user_data['is_delivery'],
+        status_id=1  # Оформлен
     )
     customer_id = context.user_data['user_id']
     order_data = db_handler.get_last_customer_order(customer_id)

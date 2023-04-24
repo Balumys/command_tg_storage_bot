@@ -72,7 +72,7 @@ def get_storage_address():
     return '\n'.join(addresses)
 
 
-def create_order(customer_id, box_size, period, is_delivery):
+def create_order(customer_id, box_size, period, is_delivery, status_id):
     session = Session()
     periods = {
         1: datetime.timedelta(days=30),
@@ -103,6 +103,7 @@ def create_order(customer_id, box_size, period, is_delivery):
         customer_id=customer_id,
         box_id=box_id,
         period=period,
+        status_id=status_id
     )
     session.add(order)
     session.commit()

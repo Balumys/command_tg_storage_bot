@@ -34,6 +34,9 @@ class Orders(Base):
     box_id = Column(Integer, ForeignKey('box.id', ondelete='CASCADE'))
     box = relationship('Box', uselist=False, back_populates='order')
 
+    status_id = Column(Integer, ForeignKey('status.id', ondelete='SET NULL'))
+    status = relationship('Status', uselist=False, back_populates='order')
+
     period = Column(Integer)
 
     def __repr__(self):
@@ -58,6 +61,17 @@ class Box(Base):
     storage_id = Column(Integer, ForeignKey(Storage.id))
 
     order = relationship('Orders', back_populates='box', cascade='all, delete')
+
+    def __repr__(self):
+        return f"{self.id} {self.size}"
+
+
+class Status(Base):
+    __tablename__ = 'status'
+    id = Column(Integer, primary_key=True)
+    state = Column(String, nullable=False)
+
+    order = relationship('Orders', back_populates='status', cascade='all, delete')
 
     def __repr__(self):
         return f"{self.id} {self.size}"
