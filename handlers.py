@@ -234,7 +234,7 @@ def write_customer_email(update, context):
 
     text = (
         'Данные заказа:\n'
-        f'Номер заказа *№{order_data["order_id"]}*\n'
+        f'Номер заказа - *№{order_data["order_id"]}*\n'
         f'Размер бокса - *{order_data["box_size"]}*\n'
         f'Срок начала хранения - *{order_data["created_at"].date()}*\n'
         f'Срок окончания хранения - *{order_data["expired_at"].date()}*\n'
@@ -265,10 +265,24 @@ def write_customer_email(update, context):
 def verify_order(update, context):
     query = update.callback_query
     query.answer()
-    query.edit_message_text(
-        text='Заказ успешно создан.'
-    )
-    return -1
+    if context.user_data['is_delivery'] != 1:
+        text = 'Отлично ваш заказ сформирован, мы ждем вас на нашем складе по адресу:' \
+               f'\n*{db_handler.get_storage_address()}*\n' \
+               f'Часы работы: *Пн-Вс* с *09:00-21:00*'
+        query.edit_message_text(
+            text=text,
+            parse_mode='markdown'
+        )
+        return -1
+    else:
+        text = 'Отлично ваш заказ сформирован, в блажайшее время с вами свяжется наш курьер ' \
+               'и уточнит детали доставки.:'
+        query.edit_message_text(
+            text=text,
+            parse_mode='markdown'
+        )
+        return -1
+
 
 # Ветка Мои заказы
 
@@ -399,4 +413,3 @@ def notify_about_expired(context):
                               f" за очень дорого.\nЕсли после истечения этого срока" \
                               f" вы их не заберете - считайте, что они наши."
                     context.bot.send_message(chat_id=User.chat_id, text=message, parse_mode='markdown')
-
