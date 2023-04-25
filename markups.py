@@ -169,3 +169,35 @@ def verify_order_keyboard():
     ]
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
+
+
+### CLIENT BOT ###
+
+
+def client_start_keyboard():
+    button_list = [
+        [
+            KeyboardButton("🎿 Статистика"),
+            KeyboardButton("🚚 Заказы с доставкой"),
+        ],
+        [
+            KeyboardButton("📦 Просроченные Заказы"),
+        ]
+    ]
+    reply_markup = ReplyKeyboardMarkup(button_list, resize_keyboard=True)
+    return reply_markup
+
+
+def customer_orders_keyboard_(orders):
+    button_list = []
+    for order in orders:
+        button_list.append(
+            [
+                InlineKeyboardButton(
+                    f'Заказ №{order.id}',
+                    callback_data=f'take_order_{order.id}',
+                )
+            ]
+        )
+    reply_markup = InlineKeyboardMarkup(button_list)
+    return reply_markup

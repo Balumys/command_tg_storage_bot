@@ -39,7 +39,7 @@ class Orders(Base):
     box_id = Column(Integer, ForeignKey('box.id', ondelete='CASCADE'))
     box = relationship('Box', uselist=False, back_populates='order')
 
-    status_id = Column(Integer, ForeignKey('status.id', ondelete='SET NULL'))
+    status_id = Column(Integer, ForeignKey('status.id', ondelete='SET NULL'), default=1)
     status = relationship('Status', uselist=False, back_populates='order')
 
     period = Column(Integer)
