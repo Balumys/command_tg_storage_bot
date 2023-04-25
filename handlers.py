@@ -6,6 +6,12 @@ import datetime
 
 from qr_code_handler import create_qr_code
 from db import User
+from environs import Env
+
+
+env = Env()
+env.read_env()
+media_path = env('MEDIA_PATH')
 
 
 def start(update, context):
@@ -24,7 +30,7 @@ def start(update, context):
         db_handler.add_customer(first_name, user_id)
     except sqlalchemy.exc.IntegrityError:
         print('Пользователь уже зарегистрирован')
-    photo_path = 'media/storage.jpg'
+    photo_path = f'{media_path}/storage.jpg'
     with open(photo_path, 'rb') as file:
         update.message.reply_photo(
             photo=file,

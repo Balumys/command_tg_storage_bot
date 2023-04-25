@@ -2,8 +2,13 @@ import datetime
 
 from sqlalchemy import create_engine, ForeignKey, Column, String, Integer, DateTime, Float, Boolean
 from sqlalchemy.orm import relationship, declarative_base
+from environs import Env
 
-engine = create_engine('sqlite:///database.db', echo=True)
+
+env = Env()
+env.read_env()
+db_path = env('DB_PATH')
+engine = create_engine(f'sqlite:///{db_path}')
 Base = declarative_base()
 
 
@@ -34,7 +39,7 @@ class Orders(Base):
     box_id = Column(Integer, ForeignKey('box.id', ondelete='CASCADE'))
     box = relationship('Box', uselist=False, back_populates='order')
 
-    status_id = Column(Integer, ForeignKey('status.id', ondelete='SET NULL'))
+    status_id = Column(Integer, ForeignKey('status.id', ondelete='SET NULL'), default=1)
     status = relationship('Status', uselist=False, back_populates='order')
 
     period = Column(Integer)

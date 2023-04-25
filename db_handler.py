@@ -1,10 +1,15 @@
 import datetime
 
-from db import Base, Customer, Orders, Storage, Box
+from db import Customer, Orders, Storage, Box
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from environs import Env
 
-engine = create_engine('sqlite:///database.db')
+
+env = Env()
+env.read_env()
+db_path = env('DB_PATH')
+engine = create_engine(f'sqlite:///{db_path}')
 Session = sessionmaker(bind=engine)
 
 """ SOME QUERIES """
@@ -154,3 +159,35 @@ def is_customer_exist(customer_id):
         return customer
     else:
         return False
+
+
+def get_orders_to_delivery():
+    session = Session()
+    orders = session.query(Orders).filter(Orders.status_id == 1, Orders.is_delivery == 1).all()
+    session.close()
+    return orders
+
+
+def get_expired_orders():
+    session = Session()
+    orders = session.query(Orders).filter(Orders.expired_at < datetime.datetime.now()).all()
+    session.close()
+    return orders
+
+
+def get_order_by_id(order_id):
+    session = Session()
+    order = session.query(Orders).filter(Orders.id == order_id).first()
+    context = {
+        'order_id': order.id,
+        'created_at': order.created_at,
+        'expired_at': order.expired_at,
+        'box_size': order.box.size if order.box.size != 'Unknown' else 'Будет уточнен',
+        'price': order.price if order.box.size != 'Unknown' else 'Будет уточнен',
+        'is_delivery': order.is_delivery,
+        'customer_id': order.customer_id,
+        'customer_name': order.customer.name,
+        'customer_phone': order.customer.phone,
+    }
+    session.close()
+    return context
