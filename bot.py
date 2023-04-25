@@ -1,17 +1,12 @@
-import datetime
-
 import handlers
 
-from datetime import datetime
 from datetime import timedelta
 from telegram.ext import (
     Filters,
     MessageHandler,
     CallbackQueryHandler,
     CommandHandler,
-    ContextTypes,
     ConversationHandler,
-    RegexHandler,
     Updater,
 )
 from environs import Env

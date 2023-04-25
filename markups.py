@@ -169,5 +169,3 @@ def verify_order_keyboard():
     ]
     reply_markup = InlineKeyboardMarkup(button_list)
     return reply_markup
-
-

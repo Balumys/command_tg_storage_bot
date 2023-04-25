@@ -1,10 +1,15 @@
 import datetime
 
-from db import Base, Customer, Orders, Storage, Box
+from db import Customer, Orders, Storage, Box
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from environs import Env
 
-engine = create_engine('sqlite:///database.db')
+
+env = Env()
+env.read_env()
+db_path = env('DB_PATH')
+engine = create_engine(f'sqlite:///{db_path}')
 Session = sessionmaker(bind=engine)
 
 """ SOME QUERIES """

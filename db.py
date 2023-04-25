@@ -2,8 +2,13 @@ import datetime
 
 from sqlalchemy import create_engine, ForeignKey, Column, String, Integer, DateTime, Float, Boolean
 from sqlalchemy.orm import relationship, declarative_base
+from environs import Env
 
-engine = create_engine('sqlite:///database.db', echo=True)
+
+env = Env()
+env.read_env()
+db_path = env('DB_PATH')
+engine = create_engine(f'sqlite:///{db_path}')
 Base = declarative_base()
 
 
