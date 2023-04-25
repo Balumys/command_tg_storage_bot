@@ -12,7 +12,8 @@
 * кнопка ознакомления с правилами хранения вещей на складе.
 
 ### Пример работы
-![client_bot](https://user-images.githubusercontent.com/79669407/234339129-423b4b10-61b2-4f79-9e53-3d116b0da0cc.gif)
+![client_bot](https://user-images.githubusercontent.com/79669407/234340204-441333ae-e658-4ad1-99e5-b28ecfcd1271.gif)
+
 
 ### Функционал бота заказчика
 
@@ -22,7 +23,7 @@
 * отображение просроченных заказов, за которые клиенту полагается штраф.  
 
 ### Пример работы
-![customer_bot](https://user-images.githubusercontent.com/79669407/234339311-15997b7e-2708-4a4b-a7d2-6af690729d6e.gif)
+![customer_bot](https://user-images.githubusercontent.com/79669407/234340239-c77f5250-82d1-4373-ac04-fa5e5dabbd63.gif)
 
 
 ### Цель проекта
